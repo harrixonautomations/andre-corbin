@@ -40,7 +40,7 @@ const Navigation = () => {
             ))}
             <Link
               to="/contact"
-              className="px-5 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-sm tracking-wide uppercase hover:bg-gold-light transition-colors duration-300"
+              className="px-5 py-2.5 bg-primary text-primary-foreground text-sm font-medium rounded-sm tracking-wide uppercase hover:bg-gold-light transition-colors duration-300"
             >
               Book a Session
             </Link>
@@ -84,7 +84,7 @@ const Navigation = () => {
               <Link
                 to="/contact"
                 onClick={() => setIsOpen(false)}
-                className="mt-2 px-5 py-3 bg-primary text-primary-foreground text-sm font-semibold rounded-sm tracking-wide uppercase text-center"
+                className="mt-2 px-5 py-3 bg-primary text-primary-foreground text-sm font-medium rounded-sm tracking-wide uppercase text-center"
               >
                 Book a Session
               </Link>

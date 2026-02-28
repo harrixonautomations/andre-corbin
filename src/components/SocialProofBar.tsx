@@ -28,7 +28,7 @@ const SocialProofBar = () => (
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.08 }}
-            className="text-lg md:text-xl font-display font-semibold text-muted-foreground/50 tracking-wide"
+            className="text-lg md:text-xl font-display font-medium text-muted-foreground/50 tracking-wide"
           >
             {name}
           </motion.div>

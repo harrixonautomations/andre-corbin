@@ -11,7 +11,7 @@ const VideoSection = () => (
         transition={{ duration: 0.7 }}
         className="text-center mb-12"
       >
-        <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground mb-4">
+        <h2 className="font-display text-3xl md:text-5xl font-semibold text-foreground mb-4">
           Watch the <span className="text-gradient-gold">Introduction</span>
         </h2>
         <p className="text-muted-foreground max-w-xl mx-auto">

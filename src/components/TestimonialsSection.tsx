@@ -30,7 +30,7 @@ const TestimonialsSection = () => (
         className="text-center mb-16"
       >
         <p className="text-xs font-medium tracking-[0.3em] uppercase text-primary mb-4">Testimonials</p>
-        <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground">
+        <h2 className="font-display text-3xl md:text-5xl font-semibold text-foreground">
           What Leaders <span className="text-gradient-gold">Say</span>
         </h2>
       </motion.div>
@@ -50,7 +50,7 @@ const TestimonialsSection = () => (
               "{t.quote}"
             </p>
             <div>
-              <p className="text-foreground font-semibold text-sm">{t.name}</p>
+              <p className="text-foreground font-medium text-sm">{t.name}</p>
               <p className="text-muted-foreground text-xs">{t.title}</p>
             </div>
           </motion.div>
