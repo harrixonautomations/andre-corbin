@@ -27,7 +27,7 @@ const BookPreview = () => (
           transition={{ duration: 0.7, delay: 0.15 }}
         >
           <p className="text-xs font-medium tracking-[0.3em] uppercase text-primary mb-4">New Release</p>
-          <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground mb-6">
+          <h2 className="font-display text-3xl md:text-5xl font-semibold text-foreground mb-6">
             The Book
           </h2>
           <p className="text-muted-foreground leading-relaxed mb-8">
@@ -38,13 +38,13 @@ const BookPreview = () => (
           <div className="flex flex-col sm:flex-row gap-4">
             <Link
               to="/book"
-              className="px-8 py-4 bg-primary text-primary-foreground font-semibold text-sm tracking-wider uppercase rounded-sm hover:bg-gold-light transition-colors duration-300 text-center"
+              className="px-8 py-4 bg-primary text-primary-foreground font-medium text-sm tracking-wider uppercase rounded-sm hover:bg-gold-light transition-colors duration-300 text-center"
             >
               Learn More
             </Link>
             <a
               href="#"
-              className="px-8 py-4 border border-border text-foreground font-semibold text-sm tracking-wider uppercase rounded-sm hover:border-primary hover:text-primary transition-colors duration-300 text-center"
+              className="px-8 py-4 border border-border text-foreground font-medium text-sm tracking-wider uppercase rounded-sm hover:border-primary hover:text-primary transition-colors duration-300 text-center"
             >
               Buy on Amazon
             </a>

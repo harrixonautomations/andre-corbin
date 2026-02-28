@@ -25,7 +25,7 @@ const HeroSection = () => (
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.15 }}
-        className="font-display text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold leading-[1.05] text-foreground mb-8"
+        className="font-display text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-semibold leading-[1.05] text-foreground mb-8"
       >
         Lead with
         <br />
@@ -47,13 +47,13 @@ const HeroSection = () => (
       >
         <Link
           to="/contact"
-          className="px-8 py-4 bg-primary text-primary-foreground font-semibold text-sm tracking-wider uppercase rounded-sm hover:bg-gold-light transition-colors duration-300 glow-gold"
+          className="px-8 py-4 bg-primary text-primary-foreground font-medium text-sm tracking-wider uppercase rounded-sm hover:bg-gold-light transition-colors duration-300 glow-gold"
         >
           Book a Session
         </Link>
         <Link
           to="/book"
-          className="px-8 py-4 border border-border text-foreground font-semibold text-sm tracking-wider uppercase rounded-sm hover:border-primary hover:text-primary transition-colors duration-300"
+          className="px-8 py-4 border border-border text-foreground font-medium text-sm tracking-wider uppercase rounded-sm hover:border-primary hover:text-primary transition-colors duration-300"
         >
           Discover the Book
         </Link>

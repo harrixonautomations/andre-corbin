@@ -23,7 +23,7 @@ const LeadCapture = () => {
           transition={{ duration: 0.7 }}
         >
           <p className="text-xs font-medium tracking-[0.3em] uppercase text-primary mb-4">Free Chapter</p>
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
+          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4">
             Get a Free Chapter
           </h2>
           <p className="text-muted-foreground mb-8 max-w-md mx-auto">
@@ -51,7 +51,7 @@ const LeadCapture = () => {
               />
               <button
                 type="submit"
-                className="px-6 py-3.5 bg-primary text-primary-foreground font-semibold text-sm tracking-wider uppercase rounded-sm hover:bg-gold-light transition-colors duration-300 flex items-center justify-center gap-2"
+                className="px-6 py-3.5 bg-primary text-primary-foreground font-medium text-sm tracking-wider uppercase rounded-sm hover:bg-gold-light transition-colors duration-300 flex items-center justify-center gap-2"
               >
                 Send <ArrowRight size={16} />
               </button>
