@@ -7,6 +7,8 @@ import Index from "./pages/Index";
 import About from "./pages/About";
 import Coaching from "./pages/Coaching";
 import Book from "./pages/Book";
+import BookDetail from "./pages/BookDetail";
+import Checkout from "./pages/Checkout";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 
@@ -23,6 +25,8 @@ const App = () => (
           <Route path="/about" element={<About />} />
           <Route path="/coaching" element={<Coaching />} />
           <Route path="/book" element={<Book />} />
+          <Route path="/book/:bookId" element={<BookDetail />} />
+          <Route path="/checkout/:bookId" element={<Checkout />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
