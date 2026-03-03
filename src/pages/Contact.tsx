@@ -43,7 +43,7 @@ const Contact = () => {
               {submitted ? (
                 <div className="bg-card border border-border rounded-lg p-12 text-center">
                   <p className="text-primary font-display text-2xl font-bold mb-2">Message Sent</p>
-                  <p className="text-muted-foreground">Thank you — Andre will be in touch shortly.</p>
+                  <p className="text-muted-foreground">Thank you — Andre' will be in touch shortly.</p>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -74,7 +74,7 @@ const Contact = () => {
                     required
                     maxLength={1000}
                     rows={5}
-                    placeholder="Tell Andre a bit about yourself and what you're looking for..."
+                    placeholder="Tell Andre' a bit about yourself and what you're looking for..."
                     className="w-full px-5 py-3.5 bg-card border border-border rounded-sm text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:border-primary transition-colors resize-none"
                   />
                   <button

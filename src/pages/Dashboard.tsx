@@ -1,0 +1,184 @@
+import { useState, useEffect } from "react";
+import { Navigate, Link } from "react-router-dom";
+import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import { LogOut, Package, Calendar, BookOpen, Clock, Truck, CheckCircle2 } from "lucide-react";
+
+interface OrderRow {
+  id: string;
+  book_id: string | null;
+  total: number;
+  status: string;
+  created_at: string;
+  first_name: string;
+  last_name: string;
+  book_title?: string;
+}
+
+interface ConsultationRow {
+  id: string;
+  name: string;
+  email: string;
+  message: string | null;
+  phone: string | null;
+  preferred_date: string | null;
+  status: string;
+  created_at: string;
+}
+
+const statusIcon = (status: string) => {
+  switch (status) {
+    case "pending": return <Clock size={14} className="text-primary" />;
+    case "processing": return <Package size={14} className="text-blue-400" />;
+    case "shipped": return <Truck size={14} className="text-green-400" />;
+    case "completed": return <CheckCircle2 size={14} className="text-green-400" />;
+    case "confirmed": return <CheckCircle2 size={14} className="text-green-400" />;
+    default: return <Clock size={14} className="text-muted-foreground" />;
+  }
+};
+
+const statusColor = (status: string) => {
+  switch (status) {
+    case "pending": return "bg-primary/10 text-primary";
+    case "processing": return "bg-blue-500/10 text-blue-400";
+    case "shipped": return "bg-green-500/10 text-green-400";
+    case "completed": return "bg-green-500/10 text-green-400";
+    case "confirmed": return "bg-green-500/10 text-green-400";
+    default: return "bg-muted text-muted-foreground";
+  }
+};
+
+const Dashboard = () => {
+  const { user, loading, signOut } = useAuth();
+  const [orders, setOrders] = useState<OrderRow[]>([]);
+  const [consultations, setConsultations] = useState<ConsultationRow[]>([]);
+  const [tab, setTab] = useState<"orders" | "bookings">("orders");
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchData = async () => {
+      const { data: ordersData } = await supabase
+        .from("orders")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (ordersData) {
+        // Fetch book titles
+        const bookIds = [...new Set(ordersData.filter(o => o.book_id).map(o => o.book_id!))];
+        let bookMap: Record<string, string> = {};
+        if (bookIds.length > 0) {
+          const { data: booksData } = await supabase.from("books").select("id, title").in("id", bookIds);
+          if (booksData) bookMap = Object.fromEntries(booksData.map(b => [b.id, b.title]));
+        }
+        setOrders(ordersData.map(o => ({ ...o, book_title: o.book_id ? bookMap[o.book_id] || "Unknown" : "N/A" })));
+      }
+
+      const { data: consultData } = await supabase
+        .from("consultations")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (consultData) setConsultations(consultData as ConsultationRow[]);
+    };
+    fetchData();
+  }, [user]);
+
+  if (loading) return null;
+  if (!user) return <Navigate to="/auth?redirect=/dashboard" replace />;
+
+  return (
+    <main>
+      <Navigation />
+      <section className="pt-32 pb-20 section-padding bg-background min-h-screen">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex items-center justify-between mb-10">
+            <div>
+              <h1 className="font-display text-3xl font-semibold text-foreground">My Dashboard</h1>
+              <p className="text-muted-foreground text-sm mt-1">Track your orders and bookings</p>
+            </div>
+            <Button onClick={signOut} variant="outline" size="sm" className="gap-2"><LogOut size={14} />Sign Out</Button>
+          </div>
+
+          <div className="flex gap-1 mb-8 bg-secondary rounded-lg p-1 w-fit">
+            <button onClick={() => setTab("orders")} className={`px-5 py-2.5 rounded-md text-sm font-medium transition-colors ${tab === "orders" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+              <Package size={14} className="inline mr-2" />My Orders
+            </button>
+            <button onClick={() => setTab("bookings")} className={`px-5 py-2.5 rounded-md text-sm font-medium transition-colors ${tab === "bookings" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+              <Calendar size={14} className="inline mr-2" />My Bookings
+            </button>
+          </div>
+
+          {tab === "orders" && (
+            <div>
+              {orders.length === 0 ? (
+                <div className="text-center py-16">
+                  <BookOpen size={40} className="mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground mb-4">No orders yet.</p>
+                  <Link to="/book" className="text-primary hover:underline text-sm">Browse books →</Link>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {orders.map((order) => (
+                    <motion.div key={order.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border rounded-lg p-5">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-foreground font-medium text-sm">{order.book_title}</p>
+                          <p className="text-muted-foreground text-xs mt-1">
+                            {new Date(order.created_at).toLocaleDateString()} · ${Number(order.total).toFixed(2)}
+                          </p>
+                        </div>
+                        <span className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-medium ${statusColor(order.status)}`}>
+                          {statusIcon(order.status)}
+                          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                        </span>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {tab === "bookings" && (
+            <div>
+              {consultations.length === 0 ? (
+                <div className="text-center py-16">
+                  <Calendar size={40} className="mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground mb-4">No bookings yet.</p>
+                  <Link to="/coaching" className="text-primary hover:underline text-sm">Book a session →</Link>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {consultations.map((c) => (
+                    <motion.div key={c.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border rounded-lg p-5">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-foreground font-medium text-sm">{c.name}</p>
+                          <p className="text-muted-foreground text-xs mt-1">
+                            {new Date(c.created_at).toLocaleDateString()}
+                            {c.preferred_date && ` · Preferred: ${new Date(c.preferred_date).toLocaleDateString()}`}
+                          </p>
+                          {c.message && <p className="text-muted-foreground text-xs mt-1 line-clamp-1">{c.message}</p>}
+                        </div>
+                        <span className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-medium ${statusColor(c.status)}`}>
+                          {statusIcon(c.status)}
+                          {c.status.charAt(0).toUpperCase() + c.status.slice(1)}
+                        </span>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </section>
+      <Footer />
+    </main>
+  );
+};
+
+export default Dashboard;
