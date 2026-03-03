@@ -63,6 +63,7 @@ export type Database = {
           id: string
           message: string | null
           name: string
+          phone: string | null
           preferred_date: string | null
           status: string
           user_id: string | null
@@ -73,6 +74,7 @@ export type Database = {
           id?: string
           message?: string | null
           name: string
+          phone?: string | null
           preferred_date?: string | null
           status?: string
           user_id?: string | null
@@ -83,6 +85,7 @@ export type Database = {
           id?: string
           message?: string | null
           name?: string
+          phone?: string | null
           preferred_date?: string | null
           status?: string
           user_id?: string | null
@@ -157,6 +160,7 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          phone: string | null
           user_id: string
         }
         Insert: {
@@ -164,6 +168,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          phone?: string | null
           user_id: string
         }
         Update: {
@@ -171,6 +176,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          phone?: string | null
           user_id?: string
         }
         Relationships: []

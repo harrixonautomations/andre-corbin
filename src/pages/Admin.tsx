@@ -12,6 +12,8 @@ import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import {
   BookOpen, Plus, Trash2, Edit2, Calendar, LogOut, X, Upload,
+  DollarSign, ShoppingCart, Users, Package, Truck, Clock, CheckCircle2,
+  UserPlus, UserMinus,
 } from "lucide-react";
 import { PDFDocument } from "pdf-lib";
 
@@ -31,18 +33,44 @@ interface ConsultationRow {
   id: string;
   name: string;
   email: string;
+  phone: string | null;
   message: string | null;
   preferred_date: string | null;
   status: string;
   created_at: string;
 }
 
+interface OrderRow {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  book_id: string | null;
+  total: number;
+  status: string;
+  created_at: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  country: string;
+  book_title?: string;
+}
+
+interface AdminUser {
+  id: string;
+  user_id: string;
+  email: string | null;
+}
+
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
   const { toast } = useToast();
-  const [tab, setTab] = useState<"books" | "consultations">("books");
+  const [tab, setTab] = useState<"overview" | "books" | "orders" | "consultations" | "admins">("overview");
   const [books, setBooks] = useState<BookRow[]>([]);
   const [consultations, setConsultations] = useState<ConsultationRow[]>([]);
+  const [orders, setOrders] = useState<OrderRow[]>([]);
+  const [admins, setAdmins] = useState<AdminUser[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editingBook, setEditingBook] = useState<BookRow | null>(null);
   const [formData, setFormData] = useState({ title: "", subtitle: "", description: "", price: "", amazon_url: "#" });
@@ -50,6 +78,7 @@ const Admin = () => {
   const [manuscriptFile, setManuscriptFile] = useState<File | null>(null);
   const [pageCount, setPageCount] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [newAdminEmail, setNewAdminEmail] = useState("");
 
   const fetchBooks = async () => {
     const { data } = await supabase.from("books").select("*").order("created_at", { ascending: false });
@@ -58,18 +87,43 @@ const Admin = () => {
 
   const fetchConsultations = async () => {
     const { data } = await supabase.from("consultations").select("*").order("created_at", { ascending: false });
-    if (data) setConsultations(data);
+    if (data) setConsultations(data as ConsultationRow[]);
+  };
+
+  const fetchOrders = async () => {
+    const { data } = await supabase.from("orders").select("*").order("created_at", { ascending: false });
+    if (data) {
+      const bookIds = [...new Set(data.filter(o => o.book_id).map(o => o.book_id!))];
+      let bookMap: Record<string, string> = {};
+      if (bookIds.length > 0) {
+        const { data: bData } = await supabase.from("books").select("id, title").in("id", bookIds);
+        if (bData) bookMap = Object.fromEntries(bData.map(b => [b.id, b.title]));
+      }
+      setOrders(data.map(o => ({ ...o, book_title: o.book_id ? bookMap[o.book_id] || "Unknown" : "N/A" })));
+    }
+  };
+
+  const fetchAdmins = async () => {
+    const { data: roles } = await supabase.from("user_roles").select("*").eq("role", "admin");
+    if (roles) {
+      const userIds = roles.map(r => r.user_id);
+      const { data: profiles } = await supabase.from("profiles").select("user_id, email").in("user_id", userIds);
+      const profileMap = new Map(profiles?.map(p => [p.user_id, p.email]) || []);
+      setAdmins(roles.map(r => ({ id: r.id, user_id: r.user_id, email: profileMap.get(r.user_id) || "Unknown" })));
+    }
   };
 
   useEffect(() => {
     if (user && isAdmin) {
       fetchBooks();
       fetchConsultations();
+      fetchOrders();
+      fetchAdmins();
     }
   }, [user, isAdmin]);
 
   if (loading) return null;
-  if (!user) return <Navigate to="/auth" replace />;
+  if (!user) return <Navigate to="/auth?redirect=/admin" replace />;
   if (!isAdmin) return (
     <main>
       <Navigation />
@@ -83,6 +137,12 @@ const Admin = () => {
       <Footer />
     </main>
   );
+
+  // Stats
+  const totalRevenue = orders.reduce((sum, o) => sum + Number(o.total), 0);
+  const totalOrders = orders.length;
+  const pendingOrders = orders.filter(o => o.status === "pending" || o.status === "completed").length;
+  const pendingConsultations = consultations.filter(c => c.status === "pending").length;
 
   const handleManuscriptChange = async (file: File) => {
     setManuscriptFile(file);
@@ -107,13 +167,7 @@ const Admin = () => {
 
   const openEdit = (book: BookRow) => {
     setEditingBook(book);
-    setFormData({
-      title: book.title,
-      subtitle: book.subtitle,
-      description: book.description,
-      price: String(book.price),
-      amazon_url: book.amazon_url,
-    });
+    setFormData({ title: book.title, subtitle: book.subtitle, description: book.description, price: String(book.price), amazon_url: book.amazon_url });
     setPageCount(book.page_count);
     setShowForm(true);
   };
@@ -153,14 +207,13 @@ const Admin = () => {
 
     if (editingBook) {
       const { error } = await supabase.from("books").update(bookData).eq("id", editingBook.id);
-      if (error) { toast({ title: "Update failed", description: error.message, variant: "destructive" }); }
-      else { toast({ title: "Book updated" }); }
+      if (error) toast({ title: "Update failed", description: error.message, variant: "destructive" });
+      else toast({ title: "Book updated" });
     } else {
       const { error } = await supabase.from("books").insert(bookData);
-      if (error) { toast({ title: "Insert failed", description: error.message, variant: "destructive" }); }
-      else { toast({ title: "Book added" }); }
+      if (error) toast({ title: "Insert failed", description: error.message, variant: "destructive" });
+      else toast({ title: "Book added" });
     }
-
     setSubmitting(false);
     resetForm();
     fetchBooks();
@@ -172,10 +225,54 @@ const Admin = () => {
     fetchBooks();
   };
 
+  const updateOrderStatus = async (id: string, status: string) => {
+    await supabase.from("orders").update({ status }).eq("id", id);
+    fetchOrders();
+    toast({ title: `Order marked as ${status}` });
+  };
+
   const updateConsultationStatus = async (id: string, status: string) => {
     await supabase.from("consultations").update({ status }).eq("id", id);
     fetchConsultations();
+    toast({ title: `Booking ${status}` });
   };
+
+  const addAdmin = async () => {
+    if (!newAdminEmail.trim()) return;
+    // Find user by email in profiles
+    const { data: profile } = await supabase.from("profiles").select("user_id").eq("email", newAdminEmail.trim()).maybeSingle();
+    if (!profile) {
+      toast({ title: "User not found", description: "No account with that email exists.", variant: "destructive" });
+      return;
+    }
+    const { error } = await supabase.from("user_roles").insert({ user_id: profile.user_id, role: "admin" as const });
+    if (error) {
+      toast({ title: "Failed to add admin", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Admin added" });
+      setNewAdminEmail("");
+      fetchAdmins();
+    }
+  };
+
+  const removeAdmin = async (roleId: string, email: string | null) => {
+    if (email === "testadmin@test.com") {
+      toast({ title: "Cannot remove primary admin", variant: "destructive" });
+      return;
+    }
+    if (!confirm(`Remove admin access for ${email}?`)) return;
+    await supabase.from("user_roles").delete().eq("id", roleId);
+    fetchAdmins();
+    toast({ title: "Admin removed" });
+  };
+
+  const tabs = [
+    { key: "overview" as const, label: "Overview", icon: DollarSign },
+    { key: "orders" as const, label: "Orders", icon: ShoppingCart },
+    { key: "books" as const, label: "Books", icon: BookOpen },
+    { key: "consultations" as const, label: "Bookings", icon: Calendar },
+    { key: "admins" as const, label: "Admins", icon: Users },
+  ];
 
   return (
     <main>
@@ -184,21 +281,113 @@ const Admin = () => {
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-10">
             <div>
-              <h1 className="font-display text-3xl font-semibold text-foreground">Admin Dashboard</h1>
-              <p className="text-muted-foreground text-sm mt-1">Manage books and consultations</p>
+              <h1 className="font-display text-3xl font-semibold text-foreground">Admin Cockpit</h1>
+              <p className="text-muted-foreground text-sm mt-1">Andre' Corbin — Site Management</p>
             </div>
             <Button onClick={signOut} variant="outline" size="sm" className="gap-2"><LogOut size={14} />Sign Out</Button>
           </div>
 
-          <div className="flex gap-1 mb-8 bg-secondary rounded-lg p-1 w-fit">
-            <button onClick={() => setTab("books")} className={`px-5 py-2.5 rounded-md text-sm font-medium transition-colors ${tab === "books" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-              <BookOpen size={14} className="inline mr-2" />Books
-            </button>
-            <button onClick={() => setTab("consultations")} className={`px-5 py-2.5 rounded-md text-sm font-medium transition-colors ${tab === "consultations" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-              <Calendar size={14} className="inline mr-2" />Consultations
-            </button>
+          {/* Tabs */}
+          <div className="flex gap-1 mb-8 bg-secondary rounded-lg p-1 w-fit flex-wrap">
+            {tabs.map(t => (
+              <button key={t.key} onClick={() => setTab(t.key)} className={`px-4 py-2.5 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${tab === t.key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+                <t.icon size={14} />{t.label}
+              </button>
+            ))}
           </div>
 
+          {/* Overview */}
+          {tab === "overview" && (
+            <div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+                {[
+                  { label: "Total Revenue", value: `$${totalRevenue.toFixed(2)}`, icon: DollarSign, color: "text-green-400" },
+                  { label: "Total Orders", value: totalOrders, icon: ShoppingCart, color: "text-blue-400" },
+                  { label: "Pending Orders", value: pendingOrders, icon: Package, color: "text-primary" },
+                  { label: "Pending Bookings", value: pendingConsultations, icon: Calendar, color: "text-primary" },
+                ].map((stat, i) => (
+                  <motion.div key={i} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="bg-card border border-border rounded-lg p-5">
+                    <div className="flex items-center gap-2 mb-2">
+                      <stat.icon size={16} className={stat.color} />
+                      <span className="text-xs text-muted-foreground uppercase tracking-wider">{stat.label}</span>
+                    </div>
+                    <p className="text-2xl font-semibold text-foreground">{stat.value}</p>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Recent orders */}
+              <h3 className="font-display text-lg font-semibold text-foreground mb-4">Recent Orders</h3>
+              <div className="space-y-2 mb-10">
+                {orders.slice(0, 5).map(o => (
+                  <div key={o.id} className="bg-card border border-border rounded-lg p-4 flex items-center justify-between">
+                    <div>
+                      <p className="text-foreground text-sm font-medium">{o.first_name} {o.last_name} — {o.book_title}</p>
+                      <p className="text-muted-foreground text-xs">{new Date(o.created_at).toLocaleDateString()} · ${Number(o.total).toFixed(2)}</p>
+                    </div>
+                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${o.status === "shipped" ? "bg-green-500/10 text-green-400" : o.status === "processing" ? "bg-blue-500/10 text-blue-400" : "bg-primary/10 text-primary"}`}>{o.status}</span>
+                  </div>
+                ))}
+                {orders.length === 0 && <p className="text-muted-foreground text-sm text-center py-6">No orders yet.</p>}
+              </div>
+
+              {/* Recent bookings */}
+              <h3 className="font-display text-lg font-semibold text-foreground mb-4">Recent Bookings</h3>
+              <div className="space-y-2">
+                {consultations.slice(0, 5).map(c => (
+                  <div key={c.id} className="bg-card border border-border rounded-lg p-4 flex items-center justify-between">
+                    <div>
+                      <p className="text-foreground text-sm font-medium">{c.name}</p>
+                      <p className="text-muted-foreground text-xs">{c.email} · {new Date(c.created_at).toLocaleDateString()}</p>
+                    </div>
+                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${c.status === "confirmed" ? "bg-green-500/10 text-green-400" : "bg-primary/10 text-primary"}`}>{c.status}</span>
+                  </div>
+                ))}
+                {consultations.length === 0 && <p className="text-muted-foreground text-sm text-center py-6">No bookings yet.</p>}
+              </div>
+            </div>
+          )}
+
+          {/* Orders Tab */}
+          {tab === "orders" && (
+            <div>
+              <h2 className="font-display text-xl font-semibold text-foreground mb-6">All Orders</h2>
+              {orders.length === 0 ? (
+                <p className="text-muted-foreground text-center py-12">No orders yet.</p>
+              ) : (
+                <div className="space-y-3">
+                  {orders.map(o => (
+                    <div key={o.id} className="bg-card border border-border rounded-lg p-5">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                          <p className="text-foreground font-medium text-sm">{o.first_name} {o.last_name}</p>
+                          <p className="text-muted-foreground text-xs">{o.email}</p>
+                          <p className="text-muted-foreground text-xs mt-1">Book: {o.book_title} · ${Number(o.total).toFixed(2)}</p>
+                          <p className="text-muted-foreground text-xs">{o.address}, {o.city}, {o.state} {o.zip}, {o.country}</p>
+                          <p className="text-muted-foreground text-xs">{new Date(o.created_at).toLocaleDateString()}</p>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${o.status === "shipped" ? "bg-green-500/10 text-green-400" : o.status === "processing" ? "bg-blue-500/10 text-blue-400" : "bg-primary/10 text-primary"}`}>{o.status}</span>
+                          {(o.status === "pending" || o.status === "completed") && (
+                            <Button size="sm" variant="outline" onClick={() => updateOrderStatus(o.id, "processing")} className="text-xs">
+                              <Package size={12} className="mr-1" />Processing
+                            </Button>
+                          )}
+                          {o.status === "processing" && (
+                            <Button size="sm" variant="outline" onClick={() => updateOrderStatus(o.id, "shipped")} className="text-xs">
+                              <Truck size={12} className="mr-1" />Shipped
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Books Tab */}
           {tab === "books" && (
             <div>
               <div className="flex items-center justify-between mb-6">
@@ -215,7 +404,7 @@ const Admin = () => {
                   <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2"><Label>Title</Label><Input value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required className="bg-secondary border-border" /></div>
                     <div className="space-y-2"><Label>Subtitle</Label><Input value={formData.subtitle} onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })} className="bg-secondary border-border" /></div>
-                    <div className="space-y-2 md:col-span-2"><Label>Short Summary</Label><Textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={3} className="bg-secondary border-border" /></div>
+                    <div className="space-y-2 md:col-span-2"><Label>Description</Label><Textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={3} className="bg-secondary border-border" /></div>
                     <div className="space-y-2"><Label>Price ($)</Label><Input type="number" step="0.01" min="0" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} required className="bg-secondary border-border" /></div>
                     <div className="space-y-2"><Label>Amazon Link</Label><Input value={formData.amazon_url} onChange={(e) => setFormData({ ...formData, amazon_url: e.target.value })} className="bg-secondary border-border" /></div>
                     <div className="space-y-2"><Label>Cover Image</Label><Input type="file" accept="image/*" onChange={(e) => setCoverFile(e.target.files?.[0] || null)} className="bg-secondary border-border" /></div>
@@ -230,7 +419,7 @@ const Admin = () => {
               )}
 
               {books.length === 0 ? (
-                <p className="text-muted-foreground text-center py-12">No books yet. Add your first book.</p>
+                <p className="text-muted-foreground text-center py-12">No books yet.</p>
               ) : (
                 <div className="space-y-3">
                   {books.map((book) => (
@@ -251,11 +440,12 @@ const Admin = () => {
             </div>
           )}
 
+          {/* Consultations Tab */}
           {tab === "consultations" && (
             <div>
-              <h2 className="font-display text-xl font-semibold text-foreground mb-6">Consultation Requests</h2>
+              <h2 className="font-display text-xl font-semibold text-foreground mb-6">Consultation Bookings</h2>
               {consultations.length === 0 ? (
-                <p className="text-muted-foreground text-center py-12">No consultation requests yet.</p>
+                <p className="text-muted-foreground text-center py-12">No bookings yet.</p>
               ) : (
                 <div className="space-y-3">
                   {consultations.map((c) => (
@@ -263,7 +453,7 @@ const Admin = () => {
                       <div className="flex items-start justify-between">
                         <div>
                           <p className="text-foreground font-medium">{c.name}</p>
-                          <p className="text-muted-foreground text-sm">{c.email}</p>
+                          <p className="text-muted-foreground text-sm">{c.email}{c.phone ? ` · ${c.phone}` : ""}</p>
                           {c.message && <p className="text-muted-foreground text-sm mt-2">{c.message}</p>}
                           {c.preferred_date && <p className="text-xs text-muted-foreground mt-1">Preferred: {new Date(c.preferred_date).toLocaleDateString()}</p>}
                         </div>
@@ -274,7 +464,9 @@ const Admin = () => {
                             "bg-muted text-muted-foreground"
                           }`}>{c.status}</span>
                           {c.status === "pending" && (
-                            <Button size="sm" variant="outline" onClick={() => updateConsultationStatus(c.id, "confirmed")}>Confirm</Button>
+                            <Button size="sm" variant="outline" onClick={() => updateConsultationStatus(c.id, "confirmed")}>
+                              <CheckCircle2 size={12} className="mr-1" />Confirm
+                            </Button>
                           )}
                         </div>
                       </div>
@@ -282,6 +474,42 @@ const Admin = () => {
                   ))}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Admins Tab */}
+          {tab === "admins" && (
+            <div>
+              <h2 className="font-display text-xl font-semibold text-foreground mb-6">Admin Management</h2>
+              <div className="bg-card border border-border rounded-lg p-6 mb-6">
+                <h3 className="text-sm font-medium text-foreground mb-3">Add New Admin</h3>
+                <div className="flex gap-3">
+                  <Input
+                    value={newAdminEmail}
+                    onChange={(e) => setNewAdminEmail(e.target.value)}
+                    placeholder="user@example.com"
+                    type="email"
+                    className="bg-secondary border-border max-w-sm"
+                  />
+                  <Button onClick={addAdmin} className="gap-2"><UserPlus size={14} />Add</Button>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">The user must have an existing account first.</p>
+              </div>
+              <div className="space-y-3">
+                {admins.map(a => (
+                  <div key={a.id} className="flex items-center justify-between bg-card border border-border rounded-lg p-4">
+                    <div>
+                      <p className="text-foreground text-sm font-medium">{a.email}</p>
+                      {a.email === "testadmin@test.com" && <span className="text-xs text-primary">Primary Admin</span>}
+                    </div>
+                    {a.email !== "testadmin@test.com" && (
+                      <Button variant="ghost" size="sm" onClick={() => removeAdmin(a.id, a.email)} className="text-destructive gap-1">
+                        <UserMinus size={14} />Remove
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

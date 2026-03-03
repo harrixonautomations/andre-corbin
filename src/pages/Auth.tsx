@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/hooks/useAuth";
@@ -7,20 +7,23 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { LogIn, UserPlus, Mail, Lock, User } from "lucide-react";
+import { LogIn, UserPlus, Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const Auth = () => {
   const { user, loading, signIn, signUp } = useAuth();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/dashboard";
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   if (loading) return null;
-  if (user) return <Navigate to="/admin" replace />;
+  if (user) return <Navigate to={redirectTo} replace />;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +33,7 @@ const Auth = () => {
       if (error) {
         toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
       } else {
-        toast({ title: "Check your email", description: "We sent you a confirmation link." });
+        toast({ title: "Check your email", description: "We sent you a confirmation link to verify your account." });
       }
     } else {
       const { error } = await signIn(email, password);
@@ -52,10 +55,10 @@ const Auth = () => {
         >
           <div className="bg-card border border-border rounded-lg p-8">
             <h1 className="font-display text-2xl font-semibold text-foreground mb-1 text-center">
-              {isSignUp ? "Create Account" : "Admin Sign In"}
+              {isSignUp ? "Create Account" : "Sign In"}
             </h1>
             <p className="text-muted-foreground text-sm text-center mb-8">
-              {isSignUp ? "Sign up to get started" : "Sign in to manage your dashboard"}
+              {isSignUp ? "Join Andre' Corbin's community" : "Welcome back to Andre' Corbin"}
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -64,7 +67,7 @@ const Auth = () => {
                   <Label htmlFor="fullName">Full Name</Label>
                   <div className="relative">
                     <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                    <Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Andre Corbin" required className="pl-10 bg-secondary border-border" />
+                    <Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Your full name" required className="pl-10 bg-secondary border-border" />
                   </div>
                 </div>
               )}
@@ -79,7 +82,24 @@ const Auth = () => {
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
                   <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                  <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required minLength={6} className="pl-10 bg-secondary border-border" />
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    minLength={6}
+                    className="pl-10 pr-10 bg-secondary border-border"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
                 </div>
               </div>
 

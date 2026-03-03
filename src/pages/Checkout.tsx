@@ -53,15 +53,15 @@ const Checkout = () => {
       country: form.country,
       payment_method: paymentMethod,
       total: book.price,
-      status: "completed",
+      status: "pending",
     });
 
     setIsSubmitting(false);
     if (error) {
       toast({ title: "Order failed", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Order placed!", description: "Your book will be shipped shortly." });
-      navigate(`/book/${book.id}`);
+      toast({ title: "Order placed!", description: "You can track your order from your dashboard." });
+      navigate("/dashboard");
     }
   };
 

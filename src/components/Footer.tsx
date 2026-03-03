@@ -6,7 +6,7 @@ const Footer = () => (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
         <div>
           <h3 className="font-display text-2xl font-semibold text-foreground mb-4">
-            Andre <span className="text-gradient-gold">Corbin</span>
+            Andre' <span className="text-gradient-gold">Corbin</span>
           </h3>
           <p className="text-muted-foreground text-sm leading-relaxed max-w-xs">
             Executive coaching for founders and leaders who refuse to settle for ordinary results.
@@ -36,7 +36,7 @@ const Footer = () => (
         </div>
       </div>
       <div className="mt-16 pt-8 border-t border-border text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} Andre Corbin. All rights reserved.
+        © {new Date().getFullYear()} Andre' Corbin. All rights reserved.
       </div>
     </div>
   </footer>

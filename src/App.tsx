@@ -9,10 +9,12 @@ import About from "./pages/About";
 import Coaching from "./pages/Coaching";
 import Book from "./pages/Book";
 import BookDetail from "./pages/BookDetail";
+import BookSession from "./pages/BookSession";
 import Checkout from "./pages/Checkout";
 import Contact from "./pages/Contact";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
+import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,8 +34,10 @@ const App = () => (
             <Route path="/book/:bookId" element={<BookDetail />} />
             <Route path="/checkout/:bookId" element={<Checkout />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/book-session" element={<BookSession />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

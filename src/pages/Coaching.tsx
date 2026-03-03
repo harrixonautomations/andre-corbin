@@ -73,7 +73,7 @@ const Coaching = () => (
                 ))}
               </ul>
               <Link
-                to="/contact"
+                to="/book-session"
                 className={`flex items-center justify-center gap-2 px-6 py-3.5 font-semibold text-sm tracking-wider uppercase rounded-sm transition-colors duration-300 ${
                   pkg.highlight
                     ? "bg-primary text-primary-foreground hover:bg-gold-light"

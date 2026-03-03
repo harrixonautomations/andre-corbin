@@ -20,7 +20,7 @@ const Navigation = () => {
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         <div className="flex items-center justify-between h-16 md:h-20">
           <Link to="/" className="font-display text-xl md:text-2xl font-semibold tracking-tight text-foreground">
-            Andre <span className="text-gradient-gold">Corbin</span>
+            Andre' <span className="text-gradient-gold">Corbin</span>
           </Link>
 
           {/* Desktop Nav */}
@@ -39,7 +39,7 @@ const Navigation = () => {
               </Link>
             ))}
             <Link
-              to="/contact"
+              to="/book-session"
               className="px-5 py-2.5 bg-primary text-primary-foreground text-sm font-medium rounded-sm tracking-wide uppercase hover:bg-gold-light transition-colors duration-300"
             >
               Book a Session
@@ -82,7 +82,7 @@ const Navigation = () => {
                 </Link>
               ))}
               <Link
-                to="/contact"
+                to="/book-session"
                 onClick={() => setIsOpen(false)}
                 className="mt-2 px-5 py-3 bg-primary text-primary-foreground text-sm font-medium rounded-sm tracking-wide uppercase text-center"
               >

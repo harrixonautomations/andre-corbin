@@ -23,7 +23,7 @@ const Book = () => {
           >
             <p className="text-xs font-medium tracking-[0.3em] uppercase text-primary mb-4">Library</p>
             <h1 className="font-display text-4xl md:text-5xl font-semibold text-foreground mb-4">
-              Books by <span className="text-gradient-gold">Andre Corbin</span>
+              Books by <span className="text-gradient-gold">Andre' Corbin</span>
             </h1>
             <p className="text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Decades of leadership wisdom distilled into actionable frameworks.
