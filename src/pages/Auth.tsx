@@ -14,7 +14,7 @@ const Auth = () => {
   const { user, loading, signIn, signUp } = useAuth();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
-  const redirectTo = searchParams.get("redirect") || "/dashboard";
+  const defaultRedirect = searchParams.get("redirect") || "/dashboard";
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,6 +23,9 @@ const Auth = () => {
   const [submitting, setSubmitting] = useState(false);
 
   if (loading) return null;
+  // Primary admin always goes to admin cockpit
+  const isAdminEmail = user?.email === "harrixonautomations@gmail.com";
+  const redirectTo = isAdminEmail ? "/admin" : defaultRedirect;
   if (user) return <Navigate to={redirectTo} replace />;
 
   const handleSubmit = async (e: React.FormEvent) => {

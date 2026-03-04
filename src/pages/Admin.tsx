@@ -239,7 +239,18 @@ const Admin = () => {
 
   const addAdmin = async () => {
     if (!newAdminEmail.trim()) return;
-    // Find user by email in profiles
+    // Check if current user is the primary admin
+    const currentProfile = admins.find(a => a.user_id === user?.id);
+    if (currentProfile?.email !== "harrixonautomations@gmail.com") {
+      toast({ title: "Only the primary admin can add others", variant: "destructive" });
+      return;
+    }
+    // Check max additional admins (exclude primary)
+    const nonPrimaryAdmins = admins.filter(a => a.email !== "harrixonautomations@gmail.com");
+    if (nonPrimaryAdmins.length >= 1) {
+      toast({ title: "Maximum admins reached", description: "You can only add 1 additional admin.", variant: "destructive" });
+      return;
+    }
     const { data: profile } = await supabase.from("profiles").select("user_id").eq("email", newAdminEmail.trim()).maybeSingle();
     if (!profile) {
       toast({ title: "User not found", description: "No account with that email exists.", variant: "destructive" });
@@ -255,8 +266,11 @@ const Admin = () => {
     }
   };
 
+  const PRIMARY_ADMIN_EMAIL = "harrixonautomations@gmail.com";
+  const MAX_ADDITIONAL_ADMINS = 1;
+
   const removeAdmin = async (roleId: string, email: string | null) => {
-    if (email === "testadmin@test.com") {
+    if (email === PRIMARY_ADMIN_EMAIL) {
       toast({ title: "Cannot remove primary admin", variant: "destructive" });
       return;
     }
@@ -493,16 +507,16 @@ const Admin = () => {
                   />
                   <Button onClick={addAdmin} className="gap-2"><UserPlus size={14} />Add</Button>
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">The user must have an existing account first.</p>
+                <p className="text-xs text-muted-foreground mt-2">The user must have an existing account. You can add a maximum of 1 additional admin.</p>
               </div>
               <div className="space-y-3">
                 {admins.map(a => (
                   <div key={a.id} className="flex items-center justify-between bg-card border border-border rounded-lg p-4">
                     <div>
                       <p className="text-foreground text-sm font-medium">{a.email}</p>
-                      {a.email === "testadmin@test.com" && <span className="text-xs text-primary">Primary Admin</span>}
+                    {a.email === "harrixonautomations@gmail.com" && <span className="text-xs text-primary">Primary Admin</span>}
                     </div>
-                    {a.email !== "testadmin@test.com" && (
+                    {a.email !== "harrixonautomations@gmail.com" && (
                       <Button variant="ghost" size="sm" onClick={() => removeAdmin(a.id, a.email)} className="text-destructive gap-1">
                         <UserMinus size={14} />Remove
                       </Button>
