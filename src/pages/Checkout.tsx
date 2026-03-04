@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, Navigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/hooks/useAuth";
@@ -32,9 +32,7 @@ const Checkout = () => {
     <main><Navigation /><section className="pt-32 pb-20 section-padding bg-background min-h-screen"><div className="max-w-4xl mx-auto text-center"><h1 className="font-display text-3xl font-semibold text-foreground mb-4">Book not found</h1><Link to="/book" className="text-primary hover:underline">← Back to all books</Link></div></section><Footer /></main>
   );
 
-  if (!user) return (
-    <main><Navigation /><section className="pt-32 pb-20 section-padding bg-background min-h-screen"><div className="max-w-md mx-auto text-center"><h1 className="font-display text-2xl font-semibold text-foreground mb-4">Sign in to checkout</h1><p className="text-muted-foreground mb-6">You need an account to place an order.</p><Link to="/auth" className="px-8 py-3 bg-primary text-primary-foreground font-medium text-sm tracking-wider uppercase rounded-sm hover:bg-gold-light transition-colors">Sign In</Link></div></section><Footer /></main>
-  );
+  if (!user) return <Navigate to={`/auth?redirect=/checkout/${bookId}`} replace />;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
