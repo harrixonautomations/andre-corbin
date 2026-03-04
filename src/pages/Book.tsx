@@ -31,81 +31,77 @@ const Book = () => {
           </motion.div>
 
           {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-card border border-border rounded-lg h-[420px] animate-pulse" />
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="bg-card border border-border rounded-md h-[320px] animate-pulse" />
               ))}
             </div>
           ) : !books || books.length === 0 ? (
             <p className="text-muted-foreground text-center py-12">No books available yet. Check back soon!</p>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {books.map((book, i) => (
                 <motion.div
                   key={book.id}
-                  initial={{ opacity: 0, y: 24 }}
+                  initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ duration: 0.45, delay: i * 0.08 }}
-                  className="group bg-card border border-border rounded-lg overflow-hidden flex flex-col hover:border-primary/30 transition-colors duration-300"
+                  transition={{ duration: 0.4, delay: i * 0.05 }}
+                  className="group bg-card border border-border rounded-md overflow-hidden flex flex-col hover:border-primary/40 transition-all duration-300 hover:shadow-md"
                 >
                   <Link
                     to={`/book/${book.id}`}
-                    className="relative bg-secondary/50 flex items-center justify-center py-8 px-6"
+                    className="relative bg-secondary/40 flex items-center justify-center py-5 px-4"
                   >
                     <img
                       src={book.cover_image_url || bookMockup}
                       alt={book.title}
-                      className="w-32 rounded-md shadow-lg group-hover:scale-[1.03] transition-transform duration-500"
+                      className="w-20 h-28 object-cover rounded shadow-md group-hover:scale-105 transition-transform duration-500"
                     />
                   </Link>
 
-                  <div className="flex flex-col flex-1 p-5">
-                    <div className="flex items-center gap-2.5 mb-2.5 text-muted-foreground text-[11px] tracking-wider uppercase">
-                      <span className="flex items-center gap-1">
-                        <Calendar size={11} />
-                        {new Date(book.created_at).getFullYear()}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <BookOpen size={11} />
+                  <div className="flex flex-col flex-1 p-3.5">
+                    <div className="flex items-center gap-2 mb-1.5 text-muted-foreground text-[10px] tracking-wider uppercase">
+                      <span className="flex items-center gap-0.5">
+                        <BookOpen size={10} />
                         {book.page_count}p
                       </span>
                       {book.reviewCount > 0 && (
                         <span className="flex items-center gap-0.5 ml-auto">
-                          <Star size={11} className="fill-primary text-primary" />
+                          <Star size={10} className="fill-primary text-primary" />
                           <span className="text-foreground/70">{book.avgRating}</span>
                         </span>
                       )}
                     </div>
 
                     <Link to={`/book/${book.id}`}>
-                      <h2 className="font-display text-base font-semibold text-foreground mb-0.5 group-hover:text-primary transition-colors leading-tight">
+                      <h2 className="font-display text-sm font-semibold text-foreground mb-0.5 group-hover:text-primary transition-colors leading-tight line-clamp-2">
                         {book.title}
                       </h2>
                     </Link>
-                    <p className="text-primary/70 text-xs font-medium mb-2">{book.subtitle}</p>
+                    <p className="text-primary/70 text-[11px] font-medium mb-1.5 line-clamp-1">{book.subtitle}</p>
 
-                    <p className="text-muted-foreground text-xs leading-relaxed mb-4 flex-1 line-clamp-3">
+                    <p className="text-muted-foreground text-[11px] leading-relaxed mb-3 flex-1 line-clamp-2">
                       {book.description}
                     </p>
 
-                    <div className="mt-auto space-y-2.5">
-                      <span className="text-lg font-semibold text-foreground block">${Number(book.price).toFixed(2)}</span>
+                    <div className="mt-auto space-y-1.5">
+                      <span className="text-base font-semibold text-foreground block">${Number(book.price).toFixed(2)}</span>
                       <Link
                         to={`/book/${book.id}`}
-                        className="flex items-center justify-center gap-2 w-full px-5 py-2.5 bg-primary text-primary-foreground font-medium text-xs tracking-wider uppercase rounded-sm hover:bg-gold-light transition-colors duration-300"
+                        className="flex items-center justify-center gap-1.5 w-full px-3 py-2 bg-primary text-primary-foreground font-medium text-[10px] tracking-wider uppercase rounded-sm hover:bg-gold-light transition-colors duration-300"
                       >
                         Order Now
-                        <ArrowRight size={13} />
+                        <ArrowRight size={11} />
                       </Link>
                       <a
                         href={book.amazon_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-2 w-full px-5 py-2.5 border border-border text-muted-foreground font-medium text-xs tracking-wider uppercase rounded-sm hover:border-primary hover:text-primary transition-colors duration-300"
+                        className="flex items-center justify-center gap-1.5 w-full px-3 py-1.5 border border-border text-muted-foreground font-medium text-[10px] tracking-wider uppercase rounded-sm hover:border-primary hover:text-primary transition-colors duration-300"
                       >
-                        View on Amazon
-                        <ArrowRight size={13} />
+                        Amazon
+                        <ArrowRight size={10} />
                       </a>
                     </div>
                   </div>
