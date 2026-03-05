@@ -14,12 +14,46 @@ export type Database = {
   }
   public: {
     Tables: {
+      availability_slots: {
+        Row: {
+          created_at: string
+          end_time: string
+          id: string
+          is_blocked: boolean
+          is_booked: boolean
+          slot_date: string
+          start_time: string
+        }
+        Insert: {
+          created_at?: string
+          end_time: string
+          id?: string
+          is_blocked?: boolean
+          is_booked?: boolean
+          slot_date: string
+          start_time: string
+        }
+        Update: {
+          created_at?: string
+          end_time?: string
+          id?: string
+          is_blocked?: boolean
+          is_booked?: boolean
+          slot_date?: string
+          start_time?: string
+        }
+        Relationships: []
+      }
       books: {
         Row: {
           amazon_url: string
           cover_image_url: string | null
           created_at: string
           description: string
+          discount_active: boolean
+          discount_end: string | null
+          discount_percent: number
+          discount_start: string | null
           id: string
           manuscript_url: string | null
           page_count: number
@@ -33,6 +67,10 @@ export type Database = {
           cover_image_url?: string | null
           created_at?: string
           description?: string
+          discount_active?: boolean
+          discount_end?: string | null
+          discount_percent?: number
+          discount_start?: string | null
           id?: string
           manuscript_url?: string | null
           page_count?: number
@@ -46,6 +84,10 @@ export type Database = {
           cover_image_url?: string | null
           created_at?: string
           description?: string
+          discount_active?: boolean
+          discount_end?: string | null
+          discount_percent?: number
+          discount_start?: string | null
           id?: string
           manuscript_url?: string | null
           page_count?: number
@@ -56,41 +98,148 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_messages: {
+        Row: {
+          consultation_id: string
+          created_at: string
+          id: string
+          message: string
+          reply_to_id: string | null
+          sender_id: string
+        }
+        Insert: {
+          consultation_id: string
+          created_at?: string
+          id?: string
+          message: string
+          reply_to_id?: string | null
+          sender_id: string
+        }
+        Update: {
+          consultation_id?: string
+          created_at?: string
+          id?: string
+          message?: string
+          reply_to_id?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_consultation_id_fkey"
+            columns: ["consultation_id"]
+            isOneToOne: false
+            referencedRelation: "consultations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "chat_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      consultation_plans: {
+        Row: {
+          created_at: string
+          description: string
+          discount_percent: number
+          display_order: number
+          duration_minutes: number
+          id: string
+          is_published: boolean
+          name: string
+          price: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          discount_percent?: number
+          display_order?: number
+          duration_minutes?: number
+          id?: string
+          is_published?: boolean
+          name: string
+          price?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          discount_percent?: number
+          display_order?: number
+          duration_minutes?: number
+          id?: string
+          is_published?: boolean
+          name?: string
+          price?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       consultations: {
         Row: {
+          client_response: string | null
           created_at: string
           email: string
           id: string
           message: string | null
           name: string
           phone: string | null
+          plan_id: string | null
+          postponed_date: string | null
+          postponed_time: string | null
           preferred_date: string | null
+          slot_date: string | null
+          slot_time: string | null
           status: string
           user_id: string | null
         }
         Insert: {
+          client_response?: string | null
           created_at?: string
           email: string
           id?: string
           message?: string | null
           name: string
           phone?: string | null
+          plan_id?: string | null
+          postponed_date?: string | null
+          postponed_time?: string | null
           preferred_date?: string | null
+          slot_date?: string | null
+          slot_time?: string | null
           status?: string
           user_id?: string | null
         }
         Update: {
+          client_response?: string | null
           created_at?: string
           email?: string
           id?: string
           message?: string | null
           name?: string
           phone?: string | null
+          plan_id?: string | null
+          postponed_date?: string | null
+          postponed_time?: string | null
           preferred_date?: string | null
+          slot_date?: string | null
+          slot_time?: string | null
           status?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "consultations_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "consultation_plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       orders: {
         Row: {
