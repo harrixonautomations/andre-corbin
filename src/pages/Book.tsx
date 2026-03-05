@@ -3,7 +3,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import LeadCapture from "@/components/LeadCapture";
 import { motion } from "framer-motion";
-import { Star, ArrowRight, BookOpen, Calendar } from "lucide-react";
+import { Star, ArrowRight, BookOpen } from "lucide-react";
 import { useBooks } from "@/hooks/useBooks";
 import bookMockup from "@/assets/book-mockup.jpg";
 
@@ -47,8 +47,15 @@ const Book = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.4, delay: i * 0.05 }}
-                  className="group bg-card border border-border rounded-md overflow-hidden flex flex-col hover:border-primary/40 transition-all duration-300 hover:shadow-md"
+                  className="group bg-card border border-border rounded-md overflow-hidden flex flex-col hover:border-primary/40 transition-all duration-300 hover:shadow-md relative"
                 >
+                  {/* Discount badge */}
+                  {book.isDiscounted && (
+                    <div className="absolute top-2 right-2 z-10 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-sm tracking-wider">
+                      {book.discount_percent}% OFF
+                    </div>
+                  )}
+
                   <Link
                     to={`/book/${book.id}`}
                     className="relative bg-secondary/40 flex items-center justify-center py-5 px-4"
@@ -86,7 +93,16 @@ const Book = () => {
                     </p>
 
                     <div className="mt-auto space-y-1.5">
-                      <span className="text-base font-semibold text-foreground block">${Number(book.price).toFixed(2)}</span>
+                      <div className="flex items-baseline gap-2">
+                        {book.isDiscounted ? (
+                          <>
+                            <span className="text-muted-foreground line-through text-xs">${Number(book.price).toFixed(2)}</span>
+                            <span className="text-base font-semibold text-foreground">${book.effectivePrice.toFixed(2)}</span>
+                          </>
+                        ) : (
+                          <span className="text-base font-semibold text-foreground">${Number(book.price).toFixed(2)}</span>
+                        )}
+                      </div>
                       <Link
                         to={`/book/${book.id}`}
                         className="flex items-center justify-center gap-1.5 w-full px-3 py-2 bg-primary text-primary-foreground font-medium text-[10px] tracking-wider uppercase rounded-sm hover:bg-gold-light transition-colors duration-300"

@@ -10,10 +10,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
+import ConsultationChat from "@/components/ConsultationChat";
+import AdminAvailability from "@/components/admin/AdminAvailability";
+import AdminPlans from "@/components/admin/AdminPlans";
+import AdminDiscounts from "@/components/admin/AdminDiscounts";
 import {
   BookOpen, Plus, Trash2, Edit2, Calendar, LogOut, X, Upload,
   DollarSign, ShoppingCart, Users, Package, Truck, Clock, CheckCircle2,
-  UserPlus, UserMinus,
+  UserPlus, UserMinus, CalendarClock, MessageCircle, Tag, ArrowRight,
 } from "lucide-react";
 import { PDFDocument } from "pdf-lib";
 
@@ -38,6 +42,12 @@ interface ConsultationRow {
   preferred_date: string | null;
   status: string;
   created_at: string;
+  slot_date: string | null;
+  slot_time: string | null;
+  postponed_date: string | null;
+  postponed_time: string | null;
+  client_response: string | null;
+  user_id: string | null;
 }
 
 interface OrderRow {
@@ -63,10 +73,12 @@ interface AdminUser {
   email: string | null;
 }
 
+const PRIMARY_ADMIN_EMAIL = "harrixonautomations@gmail.com";
+
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
   const { toast } = useToast();
-  const [tab, setTab] = useState<"overview" | "books" | "orders" | "consultations" | "admins">("overview");
+  const [tab, setTab] = useState<"overview" | "books" | "orders" | "consultations" | "availability" | "plans" | "discounts" | "admins">("overview");
   const [books, setBooks] = useState<BookRow[]>([]);
   const [consultations, setConsultations] = useState<ConsultationRow[]>([]);
   const [orders, setOrders] = useState<OrderRow[]>([]);
@@ -79,6 +91,8 @@ const Admin = () => {
   const [pageCount, setPageCount] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [newAdminEmail, setNewAdminEmail] = useState("");
+  const [openChatId, setOpenChatId] = useState<string | null>(null);
+  const [postponeData, setPostponeData] = useState<{ id: string; date: string; time: string } | null>(null);
 
   const fetchBooks = async () => {
     const { data } = await supabase.from("books").select("*").order("created_at", { ascending: false });
@@ -138,11 +152,10 @@ const Admin = () => {
     </main>
   );
 
-  // Stats
   const totalRevenue = orders.reduce((sum, o) => sum + Number(o.total), 0);
   const totalOrders = orders.length;
   const pendingOrders = orders.filter(o => o.status === "pending" || o.status === "completed").length;
-  const pendingConsultations = consultations.filter(c => c.status === "pending").length;
+  const pendingConsultations = consultations.filter(c => c.status === "pending" || c.status === "scheduled").length;
 
   const handleManuscriptChange = async (file: File) => {
     setManuscriptFile(file);
@@ -152,17 +165,12 @@ const Admin = () => {
       setPageCount(pdf.getPageCount());
     } catch {
       setPageCount(0);
-      toast({ title: "Could not read PDF", description: "Page count set to 0.", variant: "destructive" });
     }
   };
 
   const resetForm = () => {
     setFormData({ title: "", subtitle: "", description: "", price: "", amazon_url: "#" });
-    setCoverFile(null);
-    setManuscriptFile(null);
-    setPageCount(0);
-    setEditingBook(null);
-    setShowForm(false);
+    setCoverFile(null); setManuscriptFile(null); setPageCount(0); setEditingBook(null); setShowForm(false);
   };
 
   const openEdit = (book: BookRow) => {
@@ -195,13 +203,9 @@ const Admin = () => {
     }
 
     const bookData = {
-      title: formData.title,
-      subtitle: formData.subtitle,
-      description: formData.description,
-      price: parseFloat(formData.price),
-      amazon_url: formData.amazon_url,
-      cover_image_url: coverUrl,
-      page_count: pageCount,
+      title: formData.title, subtitle: formData.subtitle, description: formData.description,
+      price: parseFloat(formData.price), amazon_url: formData.amazon_url,
+      cover_image_url: coverUrl, page_count: pageCount,
       ...(manuscriptUrl ? { manuscript_url: manuscriptUrl } : {}),
     };
 
@@ -214,9 +218,7 @@ const Admin = () => {
       if (error) toast({ title: "Insert failed", description: error.message, variant: "destructive" });
       else toast({ title: "Book added" });
     }
-    setSubmitting(false);
-    resetForm();
-    fetchBooks();
+    setSubmitting(false); resetForm(); fetchBooks();
   };
 
   const deleteBook = async (id: string) => {
@@ -237,16 +239,27 @@ const Admin = () => {
     toast({ title: `Booking ${status}` });
   };
 
+  const handlePostpone = async () => {
+    if (!postponeData) return;
+    await supabase.from("consultations").update({
+      status: "postponed",
+      postponed_date: postponeData.date,
+      postponed_time: postponeData.time,
+      client_response: null,
+    }).eq("id", postponeData.id);
+    setPostponeData(null);
+    fetchConsultations();
+    toast({ title: "Meeting postponed", description: "Client will be notified." });
+  };
+
   const addAdmin = async () => {
     if (!newAdminEmail.trim()) return;
-    // Check if current user is the primary admin
     const currentProfile = admins.find(a => a.user_id === user?.id);
-    if (currentProfile?.email !== "harrixonautomations@gmail.com") {
+    if (currentProfile?.email !== PRIMARY_ADMIN_EMAIL) {
       toast({ title: "Only the primary admin can add others", variant: "destructive" });
       return;
     }
-    // Check max additional admins (exclude primary)
-    const nonPrimaryAdmins = admins.filter(a => a.email !== "harrixonautomations@gmail.com");
+    const nonPrimaryAdmins = admins.filter(a => a.email !== PRIMARY_ADMIN_EMAIL);
     if (nonPrimaryAdmins.length >= 1) {
       toast({ title: "Maximum admins reached", description: "You can only add 1 additional admin.", variant: "destructive" });
       return;
@@ -257,36 +270,32 @@ const Admin = () => {
       return;
     }
     const { error } = await supabase.from("user_roles").insert({ user_id: profile.user_id, role: "admin" as const });
-    if (error) {
-      toast({ title: "Failed to add admin", description: error.message, variant: "destructive" });
-    } else {
-      toast({ title: "Admin added" });
-      setNewAdminEmail("");
-      fetchAdmins();
-    }
+    if (error) toast({ title: "Failed to add admin", description: error.message, variant: "destructive" });
+    else { toast({ title: "Admin added" }); setNewAdminEmail(""); fetchAdmins(); }
   };
 
-  const PRIMARY_ADMIN_EMAIL = "harrixonautomations@gmail.com";
-  const MAX_ADDITIONAL_ADMINS = 1;
-
   const removeAdmin = async (roleId: string, email: string | null) => {
-    if (email === PRIMARY_ADMIN_EMAIL) {
-      toast({ title: "Cannot remove primary admin", variant: "destructive" });
-      return;
-    }
+    if (email === PRIMARY_ADMIN_EMAIL) { toast({ title: "Cannot remove primary admin", variant: "destructive" }); return; }
     if (!confirm(`Remove admin access for ${email}?`)) return;
     await supabase.from("user_roles").delete().eq("id", roleId);
     fetchAdmins();
     toast({ title: "Admin removed" });
   };
 
+  const formatTime = (t: string) => { const [h, m] = t.split(":"); const hour = parseInt(h); return `${hour % 12 || 12}:${m} ${hour >= 12 ? "PM" : "AM"}`; };
+
   const tabs = [
     { key: "overview" as const, label: "Overview", icon: DollarSign },
     { key: "orders" as const, label: "Orders", icon: ShoppingCart },
     { key: "books" as const, label: "Books", icon: BookOpen },
     { key: "consultations" as const, label: "Bookings", icon: Calendar },
+    { key: "availability" as const, label: "Calendar", icon: CalendarClock },
+    { key: "plans" as const, label: "Plans", icon: Package },
+    { key: "discounts" as const, label: "Discounts", icon: Tag },
     { key: "admins" as const, label: "Admins", icon: Users },
   ];
+
+  const consultationStatuses = ["scheduled", "postponed", "confirmed", "completed", "cancelled"];
 
   return (
     <main>
@@ -304,8 +313,8 @@ const Admin = () => {
           {/* Tabs */}
           <div className="flex gap-1 mb-8 bg-secondary rounded-lg p-1 w-fit flex-wrap">
             {tabs.map(t => (
-              <button key={t.key} onClick={() => setTab(t.key)} className={`px-4 py-2.5 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${tab === t.key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-                <t.icon size={14} />{t.label}
+              <button key={t.key} onClick={() => setTab(t.key)} className={`px-3 py-2.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 ${tab === t.key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+                <t.icon size={13} />{t.label}
               </button>
             ))}
           </div>
@@ -330,7 +339,6 @@ const Admin = () => {
                 ))}
               </div>
 
-              {/* Recent orders */}
               <h3 className="font-display text-lg font-semibold text-foreground mb-4">Recent Orders</h3>
               <div className="space-y-2 mb-10">
                 {orders.slice(0, 5).map(o => (
@@ -345,7 +353,6 @@ const Admin = () => {
                 {orders.length === 0 && <p className="text-muted-foreground text-sm text-center py-6">No orders yet.</p>}
               </div>
 
-              {/* Recent bookings */}
               <h3 className="font-display text-lg font-semibold text-foreground mb-4">Recent Bookings</h3>
               <div className="space-y-2">
                 {consultations.slice(0, 5).map(c => (
@@ -354,7 +361,7 @@ const Admin = () => {
                       <p className="text-foreground text-sm font-medium">{c.name}</p>
                       <p className="text-muted-foreground text-xs">{c.email} · {new Date(c.created_at).toLocaleDateString()}</p>
                     </div>
-                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${c.status === "confirmed" ? "bg-green-500/10 text-green-400" : "bg-primary/10 text-primary"}`}>{c.status}</span>
+                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${c.status === "confirmed" || c.status === "completed" ? "bg-green-500/10 text-green-400" : c.status === "postponed" ? "bg-yellow-500/10 text-yellow-400" : "bg-primary/10 text-primary"}`}>{c.status}</span>
                   </div>
                 ))}
                 {consultations.length === 0 && <p className="text-muted-foreground text-sm text-center py-6">No bookings yet.</p>}
@@ -454,7 +461,7 @@ const Admin = () => {
             </div>
           )}
 
-          {/* Consultations Tab */}
+          {/* Consultations Tab with advanced controls */}
           {tab === "consultations" && (
             <div>
               <h2 className="font-display text-xl font-semibold text-foreground mb-6">Consultation Bookings</h2>
@@ -465,31 +472,93 @@ const Admin = () => {
                   {consultations.map((c) => (
                     <div key={c.id} className="bg-card border border-border rounded-lg p-5">
                       <div className="flex items-start justify-between">
-                        <div>
+                        <div className="flex-1">
                           <p className="text-foreground font-medium">{c.name}</p>
                           <p className="text-muted-foreground text-sm">{c.email}{c.phone ? ` · ${c.phone}` : ""}</p>
                           {c.message && <p className="text-muted-foreground text-sm mt-2">{c.message}</p>}
-                          {c.preferred_date && <p className="text-xs text-muted-foreground mt-1">Preferred: {new Date(c.preferred_date).toLocaleDateString()}</p>}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-                            c.status === "pending" ? "bg-primary/10 text-primary" :
-                            c.status === "confirmed" ? "bg-green-500/10 text-green-400" :
-                            "bg-muted text-muted-foreground"
-                          }`}>{c.status}</span>
-                          {c.status === "pending" && (
-                            <Button size="sm" variant="outline" onClick={() => updateConsultationStatus(c.id, "confirmed")}>
-                              <CheckCircle2 size={12} className="mr-1" />Confirm
-                            </Button>
+                          {c.slot_date && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Booked: {new Date(c.slot_date + "T12:00:00").toLocaleDateString()}
+                              {c.slot_time && ` at ${formatTime(c.slot_time)}`}
+                            </p>
+                          )}
+                          {c.postponed_date && (
+                            <p className="text-xs text-yellow-400 mt-1">
+                              Rescheduled to: {new Date(c.postponed_date + "T12:00:00").toLocaleDateString()}
+                              {c.postponed_time && ` at ${formatTime(c.postponed_time)}`}
+                              {c.client_response && <span className="ml-2 text-muted-foreground">({c.client_response})</span>}
+                            </p>
                           )}
                         </div>
+                        <div className="flex flex-col items-end gap-2">
+                          <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
+                            c.status === "confirmed" || c.status === "completed" ? "bg-green-500/10 text-green-400" :
+                            c.status === "postponed" ? "bg-yellow-500/10 text-yellow-400" :
+                            c.status === "cancelled" ? "bg-destructive/10 text-destructive" :
+                            "bg-primary/10 text-primary"
+                          }`}>{c.status.replace(/_/g, " ")}</span>
+
+                          {/* Status actions */}
+                          <div className="flex flex-wrap gap-1">
+                            {consultationStatuses.filter(s => s !== c.status).map(s => (
+                              <Button key={s} size="sm" variant="outline" onClick={() => updateConsultationStatus(c.id, s)} className="text-[10px] px-2 py-1 h-auto">
+                                {s.replace(/_/g, " ")}
+                              </Button>
+                            ))}
+                          </div>
+
+                          {/* Postpone */}
+                          <Button size="sm" variant="outline" onClick={() => setPostponeData({ id: c.id, date: c.slot_date || "", time: c.slot_time || "" })} className="text-xs gap-1">
+                            <CalendarClock size={12} /> Postpone
+                          </Button>
+
+                          {/* Chat */}
+                          <Button size="sm" variant="ghost" onClick={() => setOpenChatId(openChatId === c.id ? null : c.id)} className="text-xs gap-1">
+                            <MessageCircle size={12} /> Chat
+                          </Button>
+                        </div>
                       </div>
+
+                      {/* Postpone form */}
+                      {postponeData?.id === c.id && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 pt-4 border-t border-border">
+                          <p className="text-sm font-medium text-foreground mb-3">Reschedule to:</p>
+                          <div className="flex gap-3 items-end">
+                            <div className="space-y-1">
+                              <Label className="text-xs">Date</Label>
+                              <Input type="date" value={postponeData.date} onChange={(e) => setPostponeData({ ...postponeData, date: e.target.value })} className="bg-secondary border-border text-sm" />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Time</Label>
+                              <Input type="time" value={postponeData.time} onChange={(e) => setPostponeData({ ...postponeData, time: e.target.value })} className="bg-secondary border-border text-sm" />
+                            </div>
+                            <Button size="sm" onClick={handlePostpone} className="gap-1"><CheckCircle2 size={12} /> Confirm</Button>
+                            <Button size="sm" variant="outline" onClick={() => setPostponeData(null)}><X size={12} /></Button>
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {/* Chat */}
+                      {openChatId === c.id && (
+                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4">
+                          <ConsultationChat consultationId={c.id} clientName={c.name} />
+                        </motion.div>
+                      )}
                     </div>
                   ))}
                 </div>
               )}
             </div>
           )}
+
+          {/* Availability Tab */}
+          {tab === "availability" && <AdminAvailability />}
+
+          {/* Plans Tab */}
+          {tab === "plans" && <AdminPlans />}
+
+          {/* Discounts Tab */}
+          {tab === "discounts" && <AdminDiscounts />}
 
           {/* Admins Tab */}
           {tab === "admins" && (
@@ -498,13 +567,7 @@ const Admin = () => {
               <div className="bg-card border border-border rounded-lg p-6 mb-6">
                 <h3 className="text-sm font-medium text-foreground mb-3">Add New Admin</h3>
                 <div className="flex gap-3">
-                  <Input
-                    value={newAdminEmail}
-                    onChange={(e) => setNewAdminEmail(e.target.value)}
-                    placeholder="user@example.com"
-                    type="email"
-                    className="bg-secondary border-border max-w-sm"
-                  />
+                  <Input value={newAdminEmail} onChange={(e) => setNewAdminEmail(e.target.value)} placeholder="user@example.com" type="email" className="bg-secondary border-border max-w-sm" />
                   <Button onClick={addAdmin} className="gap-2"><UserPlus size={14} />Add</Button>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">The user must have an existing account. You can add a maximum of 1 additional admin.</p>
@@ -514,9 +577,9 @@ const Admin = () => {
                   <div key={a.id} className="flex items-center justify-between bg-card border border-border rounded-lg p-4">
                     <div>
                       <p className="text-foreground text-sm font-medium">{a.email}</p>
-                    {a.email === "harrixonautomations@gmail.com" && <span className="text-xs text-primary">Primary Admin</span>}
+                      {a.email === PRIMARY_ADMIN_EMAIL && <span className="text-xs text-primary">Primary Admin</span>}
                     </div>
-                    {a.email !== "harrixonautomations@gmail.com" && (
+                    {a.email !== PRIMARY_ADMIN_EMAIL && (
                       <Button variant="ghost" size="sm" onClick={() => removeAdmin(a.id, a.email)} className="text-destructive gap-1">
                         <UserMinus size={14} />Remove
                       </Button>

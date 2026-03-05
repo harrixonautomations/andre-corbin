@@ -5,8 +5,10 @@ import Footer from "@/components/Footer";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import CountdownTimer from "@/components/CountdownTimer";
+import ConsultationChat from "@/components/ConsultationChat";
 import { motion } from "framer-motion";
-import { LogOut, Package, Calendar, BookOpen, Clock, Truck, CheckCircle2 } from "lucide-react";
+import { LogOut, Package, Calendar, BookOpen, Clock, Truck, CheckCircle2, MessageCircle, X, AlertCircle, Check } from "lucide-react";
 
 interface OrderRow {
   id: string;
@@ -28,15 +30,23 @@ interface ConsultationRow {
   preferred_date: string | null;
   status: string;
   created_at: string;
+  slot_date: string | null;
+  slot_time: string | null;
+  postponed_date: string | null;
+  postponed_time: string | null;
+  client_response: string | null;
 }
 
 const statusIcon = (status: string) => {
   switch (status) {
     case "pending": return <Clock size={14} className="text-primary" />;
+    case "scheduled": return <Calendar size={14} className="text-primary" />;
     case "processing": return <Package size={14} className="text-blue-400" />;
     case "shipped": return <Truck size={14} className="text-green-400" />;
     case "completed": return <CheckCircle2 size={14} className="text-green-400" />;
     case "confirmed": return <CheckCircle2 size={14} className="text-green-400" />;
+    case "postponed": return <AlertCircle size={14} className="text-yellow-400" />;
+    case "cancelled": return <X size={14} className="text-destructive" />;
     default: return <Clock size={14} className="text-muted-foreground" />;
   }
 };
@@ -44,12 +54,21 @@ const statusIcon = (status: string) => {
 const statusColor = (status: string) => {
   switch (status) {
     case "pending": return "bg-primary/10 text-primary";
+    case "scheduled": return "bg-primary/10 text-primary";
     case "processing": return "bg-blue-500/10 text-blue-400";
     case "shipped": return "bg-green-500/10 text-green-400";
     case "completed": return "bg-green-500/10 text-green-400";
     case "confirmed": return "bg-green-500/10 text-green-400";
+    case "postponed": return "bg-yellow-500/10 text-yellow-400";
+    case "cancelled": return "bg-destructive/10 text-destructive";
     default: return "bg-muted text-muted-foreground";
   }
+};
+
+const formatTime = (t: string) => {
+  const [h, m] = t.split(":");
+  const hour = parseInt(h);
+  return `${hour % 12 || 12}:${m} ${hour >= 12 ? "PM" : "AM"}`;
 };
 
 const Dashboard = () => {
@@ -57,6 +76,7 @@ const Dashboard = () => {
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [consultations, setConsultations] = useState<ConsultationRow[]>([]);
   const [tab, setTab] = useState<"orders" | "bookings">("orders");
+  const [openChatId, setOpenChatId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -67,7 +87,6 @@ const Dashboard = () => {
         .order("created_at", { ascending: false });
 
       if (ordersData) {
-        // Fetch book titles
         const bookIds = [...new Set(ordersData.filter(o => o.book_id).map(o => o.book_id!))];
         let bookMap: Record<string, string> = {};
         if (bookIds.length > 0) {
@@ -85,6 +104,16 @@ const Dashboard = () => {
     };
     fetchData();
   }, [user]);
+
+  const respondToPostpone = async (id: string, accept: boolean) => {
+    const update = accept
+      ? { status: "confirmed", client_response: "accepted" }
+      : { status: "reschedule_required", client_response: "rejected" };
+    await supabase.from("consultations").update(update).eq("id", id);
+    // Refresh
+    const { data } = await supabase.from("consultations").select("*").order("created_at", { ascending: false });
+    if (data) setConsultations(data as ConsultationRow[]);
+  };
 
   if (loading) return null;
   if (!user) return <Navigate to="/auth?redirect=/dashboard" replace />;
@@ -152,24 +181,77 @@ const Dashboard = () => {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {consultations.map((c) => (
-                    <motion.div key={c.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border rounded-lg p-5">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-foreground font-medium text-sm">{c.name}</p>
-                          <p className="text-muted-foreground text-xs mt-1">
-                            {new Date(c.created_at).toLocaleDateString()}
-                            {c.preferred_date && ` · Preferred: ${new Date(c.preferred_date).toLocaleDateString()}`}
-                          </p>
-                          {c.message && <p className="text-muted-foreground text-xs mt-1 line-clamp-1">{c.message}</p>}
+                  {consultations.map((c) => {
+                    const displayDate = c.status === "postponed" && c.postponed_date ? c.postponed_date : c.slot_date;
+                    const displayTime = c.status === "postponed" && c.postponed_time ? c.postponed_time : c.slot_time;
+                    const showCountdown = ["scheduled", "confirmed"].includes(c.status) && displayDate;
+                    const needsResponse = c.status === "postponed" && c.client_response !== "accepted" && c.client_response !== "rejected";
+
+                    return (
+                      <motion.div key={c.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border rounded-lg p-5">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <p className="text-foreground font-medium text-sm">{c.name}</p>
+                            <p className="text-muted-foreground text-xs mt-1">
+                              {new Date(c.created_at).toLocaleDateString()}
+                              {displayDate && ` · ${new Date(displayDate + "T12:00:00").toLocaleDateString()}`}
+                              {displayTime && ` at ${formatTime(displayTime)}`}
+                            </p>
+                            {c.message && <p className="text-muted-foreground text-xs mt-1 line-clamp-1">{c.message}</p>}
+
+                            {/* Countdown */}
+                            {showCountdown && displayDate && (
+                              <div className="mt-3">
+                                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Session in</p>
+                                <CountdownTimer targetDate={displayDate} targetTime={displayTime || undefined} />
+                              </div>
+                            )}
+
+                            {/* Postpone response */}
+                            {needsResponse && (
+                              <div className="mt-3 p-3 bg-yellow-500/5 border border-yellow-500/20 rounded-md">
+                                <p className="text-yellow-400 text-xs font-medium mb-2">
+                                  Andre' has proposed a new time: {c.postponed_date && new Date(c.postponed_date + "T12:00:00").toLocaleDateString()}
+                                  {c.postponed_time && ` at ${formatTime(c.postponed_time)}`}
+                                </p>
+                                <div className="flex gap-2">
+                                  <Button size="sm" onClick={() => respondToPostpone(c.id, true)} className="gap-1 text-xs">
+                                    <Check size={12} /> Accept
+                                  </Button>
+                                  <Button size="sm" variant="outline" onClick={() => respondToPostpone(c.id, false)} className="gap-1 text-xs">
+                                    <X size={12} /> Decline
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex flex-col items-end gap-2">
+                            <span className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-medium ${statusColor(c.status)}`}>
+                              {statusIcon(c.status)}
+                              {c.status.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
+                            </span>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => setOpenChatId(openChatId === c.id ? null : c.id)}
+                              className="gap-1 text-xs"
+                            >
+                              <MessageCircle size={13} />
+                              Chat
+                            </Button>
+                          </div>
                         </div>
-                        <span className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-medium ${statusColor(c.status)}`}>
-                          {statusIcon(c.status)}
-                          {c.status.charAt(0).toUpperCase() + c.status.slice(1)}
-                        </span>
-                      </div>
-                    </motion.div>
-                  ))}
+
+                        {/* Chat */}
+                        {openChatId === c.id && (
+                          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4">
+                            <ConsultationChat consultationId={c.id} clientName={c.name} />
+                          </motion.div>
+                        )}
+                      </motion.div>
+                    );
+                  })}
                 </div>
               )}
             </div>
