@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/hooks/useAuth";
@@ -21,32 +21,35 @@ interface Plan {
   price: number;
   duration_minutes: number;
   discount_percent: number;
-  is_published: boolean;
 }
 
 const BookSession = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
-  const [plans, setPlans] = useState<Plan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
 
+  // Load plan from URL param if present
   useEffect(() => {
-    const fetchPlans = async () => {
-      const { data } = await supabase
-        .from("consultation_plans")
-        .select("*")
-        .eq("is_published", true)
-        .order("display_order");
-      if (data) setPlans(data as Plan[]);
-    };
-    fetchPlans();
-  }, []);
+    const planId = searchParams.get("plan");
+    if (planId) {
+      const fetchPlan = async () => {
+        const { data } = await supabase
+          .from("consultation_plans")
+          .select("*")
+          .eq("id", planId)
+          .maybeSingle();
+        if (data) setSelectedPlan(data as Plan);
+      };
+      fetchPlan();
+    }
+  }, [searchParams]);
 
   if (loading) return null;
   if (!user) return <Navigate to="/auth?redirect=/book-session" replace />;
@@ -71,7 +74,6 @@ const BookSession = () => {
       status: "scheduled",
     });
 
-    // Mark the slot as booked
     if (selectedDate && selectedTime) {
       await supabase
         .from("availability_slots")
@@ -84,7 +86,7 @@ const BookSession = () => {
     if (error) {
       toast({ title: "Booking failed", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Session booked!", description: "You'll receive confirmation once Andre' reviews your booking." });
+      toast({ title: "Session booked!", description: "You'll receive confirmation once André reviews your booking." });
       navigate("/dashboard");
     }
   };
@@ -101,8 +103,8 @@ const BookSession = () => {
       : selectedPlan.price
     : 0;
 
-  const canProceedStep2 = form.name && form.email;
-  const canProceedStep3 = selectedDate && selectedTime;
+  const canProceedStep1 = form.name && form.email;
+  const canProceedStep2 = selectedDate && selectedTime;
 
   return (
     <main>
@@ -114,75 +116,34 @@ const BookSession = () => {
             <h1 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-3">
               Schedule Your <span className="text-gradient-gold">Consultation</span>
             </h1>
+            {selectedPlan && (
+              <p className="text-muted-foreground text-sm mt-2">
+                {selectedPlan.name} · {selectedPlan.duration_minutes}min · ${finalPrice.toFixed(2)}
+                {selectedPlan.discount_percent > 0 && (
+                  <span className="text-primary ml-1">({selectedPlan.discount_percent}% OFF)</span>
+                )}
+              </p>
+            )}
           </motion.div>
 
-          {/* Progress steps */}
+          {/* Progress steps — now 3 steps */}
           <div className="flex items-center justify-center gap-2 mb-10">
-            {[1, 2, 3, 4].map((s) => (
+            {[1, 2, 3].map((s) => (
               <div key={s} className="flex items-center gap-2">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all ${
                   step >= s ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
                 }`}>
                   {step > s ? <Check size={14} /> : s}
                 </div>
-                {s < 4 && <div className={`w-8 h-0.5 ${step > s ? "bg-primary" : "bg-border"}`} />}
+                {s < 3 && <div className={`w-8 h-0.5 ${step > s ? "bg-primary" : "bg-border"}`} />}
               </div>
             ))}
           </div>
 
           <AnimatePresence mode="wait">
-            {/* Step 1: Choose plan */}
+            {/* Step 1: Client details */}
             {step === 1 && (
               <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                <h2 className="text-lg font-semibold text-foreground mb-4">Choose a Consultation Plan</h2>
-                {plans.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground text-sm mb-4">No plans available yet. You can still book a general session.</p>
-                    <Button onClick={() => setStep(2)}>Continue without plan <ArrowRight size={14} className="ml-2" /></Button>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {plans.map((p) => (
-                      <button
-                        key={p.id}
-                        onClick={() => { setSelectedPlan(p); setStep(2); }}
-                        className={`w-full text-left bg-card border rounded-lg p-5 transition-all hover:border-primary/50 ${
-                          selectedPlan?.id === p.id ? "border-primary glow-gold" : "border-border"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-foreground font-semibold">{p.name}</p>
-                            <p className="text-muted-foreground text-sm mt-1">{p.description}</p>
-                            <p className="text-muted-foreground text-xs mt-1">{p.duration_minutes} minutes</p>
-                          </div>
-                          <div className="text-right">
-                            {p.discount_percent > 0 ? (
-                              <>
-                                <span className="text-muted-foreground line-through text-sm">${p.price.toFixed(2)}</span>
-                                <span className="text-foreground font-bold text-lg ml-2">
-                                  ${(p.price * (1 - p.discount_percent / 100)).toFixed(2)}
-                                </span>
-                                <span className="block text-xs text-primary font-semibold">{p.discount_percent}% OFF</span>
-                              </>
-                            ) : (
-                              <span className="text-foreground font-bold text-lg">${p.price.toFixed(2)}</span>
-                            )}
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                    <Button variant="outline" onClick={() => setStep(2)} className="w-full mt-2">
-                      Skip — book without a plan <ArrowRight size={14} className="ml-2" />
-                    </Button>
-                  </div>
-                )}
-              </motion.div>
-            )}
-
-            {/* Step 2: Client details */}
-            {step === 2 && (
-              <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <div className="bg-card border border-border rounded-lg p-6">
                   <h2 className="text-lg font-semibold text-foreground mb-4">Your Details</h2>
                   <div className="space-y-4">
@@ -214,29 +175,28 @@ const BookSession = () => {
                       <Textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} rows={3} placeholder="Brief summary of your goals..." className="bg-secondary border-border" />
                     </div>
                   </div>
-                  <div className="flex justify-between mt-6">
-                    <Button variant="outline" onClick={() => setStep(1)} className="gap-2"><ArrowLeft size={14} /> Back</Button>
-                    <Button onClick={() => setStep(3)} disabled={!canProceedStep2} className="gap-2">Select Date <ArrowRight size={14} /></Button>
+                  <div className="flex justify-end mt-6">
+                    <Button onClick={() => setStep(2)} disabled={!canProceedStep1} className="gap-2">Select Date <ArrowRight size={14} /></Button>
                   </div>
                 </div>
               </motion.div>
             )}
 
-            {/* Step 3: Calendar */}
-            {step === 3 && (
-              <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+            {/* Step 2: Calendar */}
+            {step === 2 && (
+              <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <h2 className="text-lg font-semibold text-foreground mb-4">Choose Date & Time</h2>
                 <BookingCalendar onSelect={handleCalendarSelect} selectedDate={selectedDate} selectedTime={selectedTime} />
                 <div className="flex justify-between mt-6">
-                  <Button variant="outline" onClick={() => setStep(2)} className="gap-2"><ArrowLeft size={14} /> Back</Button>
-                  <Button onClick={() => setStep(4)} disabled={!canProceedStep3} className="gap-2">Review <ArrowRight size={14} /></Button>
+                  <Button variant="outline" onClick={() => setStep(1)} className="gap-2"><ArrowLeft size={14} /> Back</Button>
+                  <Button onClick={() => setStep(3)} disabled={!canProceedStep2} className="gap-2">Review <ArrowRight size={14} /></Button>
                 </div>
               </motion.div>
             )}
 
-            {/* Step 4: Confirmation */}
-            {step === 4 && (
-              <motion.div key="step4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+            {/* Step 3: Confirmation */}
+            {step === 3 && (
+              <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <div className="bg-card border border-border rounded-lg p-6">
                   <h2 className="text-lg font-semibold text-foreground mb-6">Confirm Your Booking</h2>
                   <div className="space-y-4">
@@ -281,7 +241,7 @@ const BookSession = () => {
                     )}
                   </div>
                   <div className="flex justify-between mt-8">
-                    <Button variant="outline" onClick={() => setStep(3)} className="gap-2"><ArrowLeft size={14} /> Back</Button>
+                    <Button variant="outline" onClick={() => setStep(2)} className="gap-2"><ArrowLeft size={14} /> Back</Button>
                     <Button onClick={handleSubmit} disabled={submitting} className="gap-2">
                       <Send size={14} />
                       {submitting ? "Booking..." : "Confirm Booking"}
