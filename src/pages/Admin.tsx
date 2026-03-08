@@ -12,12 +12,13 @@ import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import ConsultationChat from "@/components/ConsultationChat";
 import AdminAvailability from "@/components/admin/AdminAvailability";
+import AdminSamples from "@/components/admin/AdminSamples";
 import AdminPlans from "@/components/admin/AdminPlans";
 import AdminDiscounts from "@/components/admin/AdminDiscounts";
 import {
   BookOpen, Plus, Trash2, Edit2, Calendar, LogOut, X, Upload,
   DollarSign, ShoppingCart, Users, Package, Truck, Clock, CheckCircle2,
-  UserPlus, UserMinus, CalendarClock, MessageCircle, Tag, ArrowRight,
+  UserPlus, UserMinus, CalendarClock, MessageCircle, Tag, ArrowRight, FileText,
 } from "lucide-react";
 import { PDFDocument } from "pdf-lib";
 
@@ -78,7 +79,7 @@ const PRIMARY_ADMIN_EMAIL = "harrixonautomations@gmail.com";
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
   const { toast } = useToast();
-  const [tab, setTab] = useState<"overview" | "books" | "orders" | "consultations" | "availability" | "plans" | "discounts" | "admins">("overview");
+  const [tab, setTab] = useState<"overview" | "books" | "orders" | "consultations" | "availability" | "plans" | "discounts" | "samples" | "admins">("overview");
   const [books, setBooks] = useState<BookRow[]>([]);
   const [consultations, setConsultations] = useState<ConsultationRow[]>([]);
   const [orders, setOrders] = useState<OrderRow[]>([]);
@@ -292,6 +293,7 @@ const Admin = () => {
     { key: "availability" as const, label: "Calendar", icon: CalendarClock },
     { key: "plans" as const, label: "Plans", icon: Package },
     { key: "discounts" as const, label: "Discounts", icon: Tag },
+    { key: "samples" as const, label: "Samples", icon: FileText },
     { key: "admins" as const, label: "Admins", icon: Users },
   ];
 
@@ -559,6 +561,9 @@ const Admin = () => {
 
           {/* Discounts Tab */}
           {tab === "discounts" && <AdminDiscounts />}
+
+          {/* Samples Tab */}
+          {tab === "samples" && <AdminSamples />}
 
           {/* Admins Tab */}
           {tab === "admins" && (
