@@ -148,7 +148,7 @@ const Coaching = () => {
                       <div className="flex items-center gap-3 mb-4">
                         <div
                           className={`p-2.5 rounded-lg ${
-                            isMiddle
+                            isPopular
                               ? "bg-primary/15 text-primary"
                               : "bg-secondary text-muted-foreground group-hover:text-primary"
                           } transition-colors`}
