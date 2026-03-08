@@ -260,6 +260,12 @@ const Admin = () => {
 
   const updateConsultationStatus = async (id: string, status: string) => {
     await supabase.from("consultations").update({ status }).eq("id", id);
+    if (user) {
+      await supabase.from("consultation_logs").insert({
+        consultation_id: id, user_id: user.id,
+        action: "status_changed", details: `Status changed to ${status}`,
+      });
+    }
     fetchConsultations();
     toast({ title: `Booking ${status}` });
   };
@@ -272,9 +278,55 @@ const Admin = () => {
       postponed_time: postponeData.time,
       client_response: null,
     }).eq("id", postponeData.id);
+    if (user) {
+      await supabase.from("consultation_logs").insert({
+        consultation_id: postponeData.id, user_id: user.id,
+        action: "postponed", details: `Postponed to ${postponeData.date} at ${postponeData.time}`,
+      });
+    }
     setPostponeData(null);
     fetchConsultations();
     toast({ title: "Meeting postponed", description: "Client will be notified." });
+  };
+
+  const respondToClientReschedule = async (id: string, accept: boolean, c: ConsultationRow) => {
+    if (accept) {
+      await supabase.from("consultations").update({
+        status: "confirmed",
+        slot_date: c.reschedule_proposed_date,
+        slot_time: c.reschedule_proposed_time,
+        client_response: "accepted",
+        reschedule_requested_by: null,
+        reschedule_proposed_date: null,
+        reschedule_proposed_time: null,
+        postponed_date: null,
+        postponed_time: null,
+      }).eq("id", id);
+      if (user) {
+        await supabase.from("consultation_logs").insert({
+          consultation_id: id, user_id: user.id,
+          action: "reschedule_accepted",
+          details: `Admin accepted client reschedule to ${c.reschedule_proposed_date} at ${c.reschedule_proposed_time}`,
+        });
+      }
+      toast({ title: "Reschedule accepted" });
+    } else {
+      await supabase.from("consultations").update({
+        status: "scheduled",
+        client_response: "rejected",
+        reschedule_requested_by: null,
+        reschedule_proposed_date: null,
+        reschedule_proposed_time: null,
+      }).eq("id", id);
+      if (user) {
+        await supabase.from("consultation_logs").insert({
+          consultation_id: id, user_id: user.id,
+          action: "reschedule_declined", details: "Admin declined client reschedule request",
+        });
+      }
+      toast({ title: "Reschedule declined" });
+    }
+    fetchConsultations();
   };
 
   const addAdmin = async () => {
