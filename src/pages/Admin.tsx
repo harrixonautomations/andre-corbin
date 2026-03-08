@@ -376,6 +376,7 @@ const Admin = () => {
     { key: "testimonials" as const, label: "Testimonials", icon: Quote },
     { key: "meeting" as const, label: "Meeting", icon: Video },
     { key: "contact" as const, label: "Contact", icon: Mail },
+    { key: "social" as const, label: "Social", icon: Share2 },
     { key: "admins" as const, label: "Admins", icon: Users },
   ];
 
