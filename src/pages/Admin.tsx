@@ -19,10 +19,11 @@ import AdminVideo from "@/components/admin/AdminVideo";
 import AdminTestimonials from "@/components/admin/AdminTestimonials";
 import AdminMeeting from "@/components/admin/AdminMeeting";
 import AdminContactInfo from "@/components/admin/AdminContactInfo";
+import AdminSocialLinks from "@/components/admin/AdminSocialLinks";
 import {
   BookOpen, Plus, Trash2, Edit2, Calendar, LogOut, X, Upload,
   DollarSign, ShoppingCart, Users, Package, Truck, Clock, CheckCircle2,
-  UserPlus, UserMinus, CalendarClock, MessageCircle, Tag, ArrowRight, FileText, Quote, Video, Mail,
+  UserPlus, UserMinus, CalendarClock, MessageCircle, Tag, ArrowRight, FileText, Quote, Video, Mail, Share2,
 } from "lucide-react";
 import { PDFDocument } from "pdf-lib";
 
@@ -86,7 +87,7 @@ const PRIMARY_ADMIN_EMAIL = "harrixonautomations@gmail.com";
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
   const { toast } = useToast();
-  const [tab, setTab] = useState<"overview" | "books" | "orders" | "consultations" | "availability" | "plans" | "discounts" | "samples" | "video" | "testimonials" | "meeting" | "contact" | "admins">("overview");
+  const [tab, setTab] = useState<"overview" | "books" | "orders" | "consultations" | "availability" | "plans" | "discounts" | "samples" | "video" | "testimonials" | "meeting" | "contact" | "social" | "admins">("overview");
   const [books, setBooks] = useState<BookRow[]>([]);
   const [consultations, setConsultations] = useState<ConsultationRow[]>([]);
   const [orders, setOrders] = useState<OrderRow[]>([]);
@@ -375,6 +376,7 @@ const Admin = () => {
     { key: "testimonials" as const, label: "Testimonials", icon: Quote },
     { key: "meeting" as const, label: "Meeting", icon: Video },
     { key: "contact" as const, label: "Contact", icon: Mail },
+    { key: "social" as const, label: "Social", icon: Share2 },
     { key: "admins" as const, label: "Admins", icon: Users },
   ];
 
@@ -689,6 +691,9 @@ const Admin = () => {
 
           {/* Contact Info Tab */}
           {tab === "contact" && <AdminContactInfo />}
+
+          {/* Social Links Tab */}
+          {tab === "social" && <AdminSocialLinks />}
 
           {/* Admins Tab */}
           {tab === "admins" && (
