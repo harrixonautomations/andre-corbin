@@ -21,7 +21,7 @@ import AdminMeeting from "@/components/admin/AdminMeeting";
 import {
   BookOpen, Plus, Trash2, Edit2, Calendar, LogOut, X, Upload,
   DollarSign, ShoppingCart, Users, Package, Truck, Clock, CheckCircle2,
-  UserPlus, UserMinus, CalendarClock, MessageCircle, Tag, ArrowRight, FileText, Quote,
+  UserPlus, UserMinus, CalendarClock, MessageCircle, Tag, ArrowRight, FileText, Quote, Video,
 } from "lucide-react";
 import { PDFDocument } from "pdf-lib";
 
