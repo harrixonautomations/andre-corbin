@@ -1,16 +1,49 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+interface Book {
+  id: string;
+  title: string;
+}
 
 const LeadCapture = () => {
   const [email, setEmail] = useState("");
+  const [books, setBooks] = useState<Book[]>([]);
+  const [selectedBook, setSelectedBook] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    const fetchBooks = async () => {
+      const { data } = await supabase.from("books").select("id, title").order("title");
+      if (data && data.length > 0) {
+        setBooks(data);
+        setSelectedBook(data[0].id);
+      }
+    };
+    fetchBooks();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email.trim()) {
+    if (!email.trim()) return;
+    setSubmitting(true);
+
+    const { error } = await supabase.from("sample_requests" as any).insert({
+      email: email.trim(),
+      book_id: selectedBook || null,
+    } as any);
+
+    if (error) {
+      toast({ title: "Something went wrong", description: "Please try again.", variant: "destructive" });
+    } else {
       setSubmitted(true);
     }
+    setSubmitting(false);
   };
 
   return (
@@ -39,22 +72,36 @@ const LeadCapture = () => {
               ✓ Check your inbox — the chapter is on its way.
             </motion.p>
           ) : (
-            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-              <input
-                type="email"
-                required
-                maxLength={255}
-                placeholder="Your email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="flex-1 px-5 py-3.5 bg-background border border-border rounded-sm text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:border-primary transition-colors"
-              />
-              <button
-                type="submit"
-                className="px-6 py-3.5 bg-primary text-primary-foreground font-medium text-sm tracking-wider uppercase rounded-sm hover:bg-gold-light transition-colors duration-300 flex items-center justify-center gap-2"
-              >
-                Send <ArrowRight size={16} />
-              </button>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-3 max-w-md mx-auto">
+              {books.length > 1 && (
+                <select
+                  value={selectedBook}
+                  onChange={(e) => setSelectedBook(e.target.value)}
+                  className="px-5 py-3.5 bg-background border border-border rounded-sm text-foreground text-sm focus:outline-none focus:border-primary transition-colors"
+                >
+                  {books.map(b => (
+                    <option key={b.id} value={b.id}>{b.title}</option>
+                  ))}
+                </select>
+              )}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <input
+                  type="email"
+                  required
+                  maxLength={255}
+                  placeholder="Your email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="flex-1 px-5 py-3.5 bg-background border border-border rounded-sm text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:border-primary transition-colors"
+                />
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="px-6 py-3.5 bg-primary text-primary-foreground font-medium text-sm tracking-wider uppercase rounded-sm hover:bg-gold-light transition-colors duration-300 flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {submitting ? "Sending..." : "Send"} <ArrowRight size={16} />
+                </button>
+              </div>
             </form>
           )}
         </motion.div>
