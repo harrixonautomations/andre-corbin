@@ -135,7 +135,7 @@ const AdminPlans = () => {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-foreground font-medium text-sm">{p.name}</p>
-                <p className="text-muted-foreground text-xs">${p.price} · {p.duration_minutes}min {p.discount_percent > 0 && `· ${p.discount_percent}% OFF`}</p>
+                <p className="text-muted-foreground text-xs">${p.price} · {p.duration_minutes}min {p.discount_percent > 0 && `· ${p.discount_percent}% OFF`} {p.is_popular && "⭐ Popular"}</p>
               </div>
               <div className="flex items-center gap-1">
                 <Button size="icon" variant="ghost" onClick={() => togglePublish(p)} className="h-8 w-8">
