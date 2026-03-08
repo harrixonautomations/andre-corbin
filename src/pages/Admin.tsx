@@ -18,10 +18,11 @@ import AdminDiscounts from "@/components/admin/AdminDiscounts";
 import AdminVideo from "@/components/admin/AdminVideo";
 import AdminTestimonials from "@/components/admin/AdminTestimonials";
 import AdminMeeting from "@/components/admin/AdminMeeting";
+import AdminContactInfo from "@/components/admin/AdminContactInfo";
 import {
   BookOpen, Plus, Trash2, Edit2, Calendar, LogOut, X, Upload,
   DollarSign, ShoppingCart, Users, Package, Truck, Clock, CheckCircle2,
-  UserPlus, UserMinus, CalendarClock, MessageCircle, Tag, ArrowRight, FileText, Quote, Video,
+  UserPlus, UserMinus, CalendarClock, MessageCircle, Tag, ArrowRight, FileText, Quote, Video, Mail,
 } from "lucide-react";
 import { PDFDocument } from "pdf-lib";
 
