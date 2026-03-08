@@ -81,7 +81,7 @@ const PRIMARY_ADMIN_EMAIL = "harrixonautomations@gmail.com";
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
   const { toast } = useToast();
-  const [tab, setTab] = useState<"overview" | "books" | "orders" | "consultations" | "availability" | "plans" | "discounts" | "samples" | "video" | "admins">("overview");
+  const [tab, setTab] = useState<"overview" | "books" | "orders" | "consultations" | "availability" | "plans" | "discounts" | "samples" | "video" | "testimonials" | "admins">("overview");
   const [books, setBooks] = useState<BookRow[]>([]);
   const [consultations, setConsultations] = useState<ConsultationRow[]>([]);
   const [orders, setOrders] = useState<OrderRow[]>([]);
