@@ -195,13 +195,13 @@ const Coaching = () => {
                       </div>
 
                       {/* Duration */}
-                      <div className="flex items-center gap-2 text-muted-foreground text-sm mb-6 pb-6 border-b border-border">
-                        <Clock size={14} className="text-primary/70" />
-                        {plan.duration_minutes} minute session
+                      <div className="flex items-center gap-1.5 text-muted-foreground text-xs mb-4 pb-4 border-b border-border">
+                        <Clock size={12} className="text-primary/70" />
+                        {plan.duration_minutes} min session
                       </div>
 
                       {/* Features */}
-                      <ul className="space-y-3 mb-8 flex-1">
+                      <ul className="space-y-2 mb-6 flex-1">
                         {features.map((feat, fi) => (
                           <li
                             key={fi}
