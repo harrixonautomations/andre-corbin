@@ -113,7 +113,7 @@ const Coaching = () => {
                   : plans.length === 4
                   ? "sm:grid-cols-2 lg:grid-cols-4"
                   : "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"
-              } gap-4 lg:gap-5 items-stretch`}
+              } gap-3 lg:gap-3 items-stretch`}
             >
               {plans.map((plan, i) => {
                 const isPopular = plan.is_popular;
@@ -138,77 +138,77 @@ const Coaching = () => {
                   >
                     {/* Popular badge */}
                     {isPopular && (
-                      <div className="bg-primary text-primary-foreground text-[10px] font-bold tracking-[0.2em] uppercase text-center py-2">
+                      <div className="bg-primary text-primary-foreground text-[9px] font-bold tracking-[0.2em] uppercase text-center py-1.5">
                         Most Popular
                       </div>
                     )}
 
-                    <div className="p-5 flex flex-col flex-1">
+                    <div className="p-3.5 flex flex-col flex-1">
                       {/* Icon + Title */}
-                      <div className="flex items-center gap-3 mb-4">
+                      <div className="flex items-center gap-2 mb-2.5">
                         <div
-                          className={`p-2.5 rounded-lg ${
+                          className={`p-1.5 rounded-md ${
                             isPopular
                               ? "bg-primary/15 text-primary"
                               : "bg-secondary text-muted-foreground group-hover:text-primary"
                           } transition-colors`}
                         >
-                          <Icon size={20} />
+                          <Icon size={16} />
                         </div>
-                        <h3 className="font-display text-base font-bold text-foreground leading-tight">
+                        <h3 className="font-display text-sm font-bold text-foreground leading-tight">
                           {plan.name}
                         </h3>
                       </div>
 
-                      <p className="text-muted-foreground text-xs leading-relaxed mb-4 line-clamp-3">
+                      <p className="text-muted-foreground text-[11px] leading-relaxed mb-2.5 line-clamp-2">
                         {plan.description}
                       </p>
 
                       {/* Price block */}
-                      <div className="mb-4">
-                        <div className="flex items-baseline gap-1.5">
+                      <div className="mb-2.5">
+                        <div className="flex items-baseline gap-1">
                           {plan.discount_percent > 0 ? (
                             <>
-                              <span className="text-muted-foreground line-through text-xs">
+                              <span className="text-muted-foreground line-through text-[10px]">
                                 ${plan.price.toFixed(0)}
                               </span>
-                              <span className="text-foreground font-bold text-2xl tracking-tight">
+                              <span className="text-foreground font-bold text-lg tracking-tight">
                                 ${finalPrice.toFixed(0)}
                               </span>
                             </>
                           ) : (
-                            <span className="text-foreground font-bold text-2xl tracking-tight">
+                            <span className="text-foreground font-bold text-lg tracking-tight">
                               ${plan.price.toFixed(0)}
                             </span>
                           )}
-                          <span className="text-muted-foreground text-sm">
+                          <span className="text-muted-foreground text-[10px]">
                             / session
                           </span>
                         </div>
 
                         {plan.discount_percent > 0 && (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold tracking-wider uppercase text-primary mt-2 px-2.5 py-1 bg-primary/10 rounded-full">
-                            <Percent size={10} />
+                          <span className="inline-flex items-center gap-0.5 text-[9px] font-bold tracking-wider uppercase text-primary mt-1 px-2 py-0.5 bg-primary/10 rounded-full">
+                            <Percent size={8} />
                             Save {plan.discount_percent}%
                           </span>
                         )}
                       </div>
 
                       {/* Duration */}
-                      <div className="flex items-center gap-1.5 text-muted-foreground text-xs mb-4 pb-4 border-b border-border">
-                        <Clock size={12} className="text-primary/70" />
-                        {plan.duration_minutes} min session
+                      <div className="flex items-center gap-1 text-muted-foreground text-[11px] mb-2.5 pb-2.5 border-b border-border">
+                        <Clock size={10} className="text-primary/70" />
+                        {plan.duration_minutes} min
                       </div>
 
                       {/* Features */}
-                      <ul className="space-y-2 mb-6 flex-1">
+                      <ul className="space-y-1.5 mb-3 flex-1">
                         {features.map((feat, fi) => (
                           <li
                             key={fi}
-                            className="flex items-start gap-2 text-xs"
+                            className="flex items-start gap-1.5 text-[11px]"
                           >
                             <Check
-                              size={12}
+                              size={10}
                              className={`mt-0.5 shrink-0 ${
                                 isPopular
                                   ? "text-primary"
@@ -223,13 +223,13 @@ const Coaching = () => {
                       {/* CTA */}
                       <Link
                         to={`/book-session?plan=${plan.id}`}
-                        className={`flex items-center justify-center gap-2 px-4 py-3 font-semibold text-xs tracking-wider uppercase rounded-lg transition-all duration-300 ${
+                        className={`flex items-center justify-center gap-1.5 px-3 py-2 font-semibold text-[10px] tracking-wider uppercase rounded-md transition-all duration-300 ${
                           isPopular
                             ? "bg-primary text-primary-foreground hover:bg-gold-light hover:shadow-lg hover:shadow-primary/20"
                             : "border border-border text-foreground hover:border-primary hover:text-primary hover:bg-primary/5"
                         }`}
                       >
-                        Get Started <ArrowRight size={14} />
+                        Get Started <ArrowRight size={12} />
                       </Link>
                     </div>
                   </motion.div>
