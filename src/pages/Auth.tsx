@@ -116,8 +116,13 @@ const Auth = () => {
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
                   <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                  <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required className="pl-10 bg-secondary border-border" />
+                  <Input id="email" type="email" value={email} onChange={(e) => handleEmailChange(e.target.value)} placeholder="you@gmail.com" required className={`pl-10 bg-secondary border-border ${emailError ? "border-destructive" : ""}`} />
                 </div>
+                {emailError && (
+                  <p className="text-destructive text-xs flex items-center gap-1 mt-1">
+                    <AlertTriangle size={12} /> {emailError}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
