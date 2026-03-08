@@ -7,8 +7,31 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { LogIn, UserPlus, Mail, Lock, User, Eye, EyeOff } from "lucide-react";
+import { LogIn, UserPlus, Mail, Lock, User, Eye, EyeOff, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
+const ALLOWED_DOMAINS = [
+  "gmail.com", "googlemail.com",
+  "outlook.com", "hotmail.com", "live.com", "msn.com",
+  "yahoo.com", "yahoo.co.uk", "yahoo.ca", "yahoo.com.au",
+  "icloud.com", "me.com", "mac.com",
+  "aol.com",
+  "protonmail.com", "proton.me", "pm.me",
+  "zoho.com",
+  "mail.com",
+  "gmx.com", "gmx.net",
+  "yandex.com", "yandex.ru",
+  "tutanota.com", "tuta.io",
+  "fastmail.com",
+  "hey.com",
+];
+
+const validateEmailDomain = (email: string): { valid: boolean; message?: string } => {
+  const domain = email.split("@")[1]?.toLowerCase();
+  if (!domain) return { valid: false, message: "Please enter a valid email address." };
+  if (ALLOWED_DOMAINS.includes(domain)) return { valid: true };
+  return { valid: false, message: `"${domain}" is not a recognized email provider. Please use a valid provider like Gmail, Outlook, Yahoo, iCloud, or ProtonMail.` };
+};
 
 const Auth = () => {
   const { user, loading, signIn, signUp } = useAuth();
@@ -21,15 +44,30 @@ const Auth = () => {
   const [fullName, setFullName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
 
   if (loading) return null;
-  // Primary admin always goes to admin cockpit
   const isAdminEmail = user?.email === "harrixonautomations@gmail.com";
   const redirectTo = isAdminEmail ? "/admin" : defaultRedirect;
   if (user) return <Navigate to={redirectTo} replace />;
 
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    if (emailError) setEmailError(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (isSignUp) {
+      const domainCheck = validateEmailDomain(email);
+      if (!domainCheck.valid) {
+        setEmailError(domainCheck.message || "Invalid email provider.");
+        toast({ title: "Invalid email provider", description: domainCheck.message, variant: "destructive" });
+        return;
+      }
+    }
+
     setSubmitting(true);
     if (isSignUp) {
       const { error } = await signUp(email, password, fullName);
@@ -78,8 +116,13 @@ const Auth = () => {
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
                   <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                  <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required className="pl-10 bg-secondary border-border" />
+                  <Input id="email" type="email" value={email} onChange={(e) => handleEmailChange(e.target.value)} placeholder="you@gmail.com" required className={`pl-10 bg-secondary border-border ${emailError ? "border-destructive" : ""}`} />
                 </div>
+                {emailError && (
+                  <p className="text-destructive text-xs flex items-center gap-1 mt-1">
+                    <AlertTriangle size={12} /> {emailError}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
