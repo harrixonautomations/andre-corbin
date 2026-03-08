@@ -113,7 +113,7 @@ const Coaching = () => {
                   : plans.length === 4
                   ? "sm:grid-cols-2 lg:grid-cols-4"
                   : "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"
-              } gap-4 lg:gap-5 items-stretch`}
+              } gap-3 lg:gap-3 items-stretch`}
             >
               {plans.map((plan, i) => {
                 const isPopular = plan.is_popular;
