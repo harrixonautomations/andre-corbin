@@ -8,6 +8,7 @@ interface Testimonial {
   quote: string;
   name: string;
   title: string;
+  company: string;
   display_order: number;
 }
 
@@ -16,7 +17,7 @@ const TestimonialsSection = () => {
 
   useEffect(() => {
     supabase.from("testimonials").select("*").order("display_order").then(({ data }) => {
-      if (data) setTestimonials(data);
+      if (data) setTestimonials(data as Testimonial[]);
     });
   }, []);
 
@@ -54,7 +55,9 @@ const TestimonialsSection = () => {
               </p>
               <div>
                 <p className="text-foreground font-medium text-sm">{t.name}</p>
-                <p className="text-muted-foreground text-xs">{t.title}</p>
+                <p className="text-muted-foreground text-xs">
+                  {[t.title, t.company].filter(Boolean).join(", ")}
+                </p>
               </div>
             </motion.div>
           ))}

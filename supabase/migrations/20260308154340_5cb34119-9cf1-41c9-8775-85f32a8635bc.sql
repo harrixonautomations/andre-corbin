@@ -1,0 +1,1 @@
+ALTER TABLE public.testimonials ADD COLUMN company text NOT NULL DEFAULT '';
