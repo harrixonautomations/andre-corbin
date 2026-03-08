@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import CountdownTimer from "@/components/CountdownTimer";
 import ConsultationChat from "@/components/ConsultationChat";
 import { motion } from "framer-motion";
-import { LogOut, Package, Calendar, BookOpen, Clock, Truck, CheckCircle2, MessageCircle, X, AlertCircle, Check } from "lucide-react";
+import { LogOut, Package, Calendar, BookOpen, Clock, Truck, CheckCircle2, MessageCircle, X, AlertCircle, Check, CalendarClock } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface OrderRow {
   id: string;
@@ -35,6 +36,9 @@ interface ConsultationRow {
   postponed_date: string | null;
   postponed_time: string | null;
   client_response: string | null;
+  reschedule_requested_by: string | null;
+  reschedule_proposed_date: string | null;
+  reschedule_proposed_time: string | null;
 }
 
 const statusIcon = (status: string) => {
@@ -46,6 +50,7 @@ const statusIcon = (status: string) => {
     case "completed": return <CheckCircle2 size={14} className="text-green-400" />;
     case "confirmed": return <CheckCircle2 size={14} className="text-green-400" />;
     case "postponed": return <AlertCircle size={14} className="text-yellow-400" />;
+    case "reschedule_pending": return <CalendarClock size={14} className="text-yellow-400" />;
     case "cancelled": return <X size={14} className="text-destructive" />;
     default: return <Clock size={14} className="text-muted-foreground" />;
   }
@@ -60,6 +65,7 @@ const statusColor = (status: string) => {
     case "completed": return "bg-green-500/10 text-green-400";
     case "confirmed": return "bg-green-500/10 text-green-400";
     case "postponed": return "bg-yellow-500/10 text-yellow-400";
+    case "reschedule_pending": return "bg-yellow-500/10 text-yellow-400";
     case "cancelled": return "bg-destructive/10 text-destructive";
     default: return "bg-muted text-muted-foreground";
   }
@@ -73,10 +79,32 @@ const formatTime = (t: string) => {
 
 const Dashboard = () => {
   const { user, loading, signOut } = useAuth();
+  const { toast } = useToast();
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [consultations, setConsultations] = useState<ConsultationRow[]>([]);
   const [tab, setTab] = useState<"orders" | "bookings">("orders");
   const [openChatId, setOpenChatId] = useState<string | null>(null);
+
+  const fetchConsultations = async () => {
+    const { data: consultData } = await supabase.from("consultations").select("*");
+    if (consultData) {
+      const now = new Date();
+      const sorted = (consultData as ConsultationRow[]).sort((a, b) => {
+        const dateA = a.slot_date ? new Date(`${a.slot_date}T${a.slot_time || "00:00"}`) : null;
+        const dateB = b.slot_date ? new Date(`${b.slot_date}T${b.slot_time || "00:00"}`) : null;
+        if (!dateA && !dateB) return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        if (!dateA) return 1;
+        if (!dateB) return -1;
+        const diffA = dateA.getTime() - now.getTime();
+        const diffB = dateB.getTime() - now.getTime();
+        if (diffA >= 0 && diffB >= 0) return diffA - diffB;
+        if (diffA >= 0) return -1;
+        if (diffB >= 0) return 1;
+        return diffB - diffA;
+      });
+      setConsultations(sorted);
+    }
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -96,54 +124,68 @@ const Dashboard = () => {
         setOrders(ordersData.map(o => ({ ...o, book_title: o.book_id ? bookMap[o.book_id] || "Unknown" : "N/A" })));
       }
 
-      const { data: consultData } = await supabase
-        .from("consultations")
-        .select("*");
-      if (consultData) {
-        const now = new Date();
-        const sorted = (consultData as ConsultationRow[]).sort((a, b) => {
-          const dateA = a.slot_date ? new Date(`${a.slot_date}T${a.slot_time || "00:00"}`) : null;
-          const dateB = b.slot_date ? new Date(`${b.slot_date}T${b.slot_time || "00:00"}`) : null;
-          if (!dateA && !dateB) return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-          if (!dateA) return 1;
-          if (!dateB) return -1;
-          const diffA = dateA.getTime() - now.getTime();
-          const diffB = dateB.getTime() - now.getTime();
-          if (diffA >= 0 && diffB >= 0) return diffA - diffB;
-          if (diffA >= 0) return -1;
-          if (diffB >= 0) return 1;
-          return diffB - diffA;
-        });
-        setConsultations(sorted);
-      }
+      fetchConsultations();
     };
     fetchData();
   }, [user]);
 
+  const respondToReschedule = async (id: string, accept: boolean, c: ConsultationRow) => {
+    if (accept) {
+      // Accept: update slot_date/slot_time to proposed values, reset reschedule fields
+      const newDate = c.reschedule_proposed_date;
+      const newTime = c.reschedule_proposed_time;
+      await supabase.from("consultations").update({
+        status: "confirmed",
+        slot_date: newDate,
+        slot_time: newTime,
+        client_response: "accepted",
+        reschedule_requested_by: null,
+        reschedule_proposed_date: null,
+        reschedule_proposed_time: null,
+        postponed_date: null,
+        postponed_time: null,
+      }).eq("id", id);
+
+      // Log
+      if (user) {
+        await supabase.from("consultation_logs").insert({
+          consultation_id: id,
+          user_id: user.id,
+          action: "reschedule_accepted",
+          details: `Accepted reschedule to ${newDate} at ${newTime}`,
+        });
+      }
+      toast({ title: "Reschedule accepted", description: "The session has been updated." });
+    } else {
+      // Decline: revert to scheduled status
+      await supabase.from("consultations").update({
+        status: "scheduled",
+        client_response: "rejected",
+        reschedule_requested_by: null,
+        reschedule_proposed_date: null,
+        reschedule_proposed_time: null,
+      }).eq("id", id);
+
+      if (user) {
+        await supabase.from("consultation_logs").insert({
+          consultation_id: id,
+          user_id: user.id,
+          action: "reschedule_declined",
+          details: "Declined reschedule request",
+        });
+      }
+      toast({ title: "Reschedule declined" });
+    }
+    fetchConsultations();
+  };
+
+  // Legacy postpone handler (for old postponed status from admin)
   const respondToPostpone = async (id: string, accept: boolean) => {
     const update = accept
       ? { status: "confirmed", client_response: "accepted" }
       : { status: "reschedule_required", client_response: "rejected" };
     await supabase.from("consultations").update(update).eq("id", id);
-    // Refresh
-    const { data } = await supabase.from("consultations").select("*");
-    if (data) {
-      const now = new Date();
-      const sorted = (data as ConsultationRow[]).sort((a, b) => {
-        const dateA = a.slot_date ? new Date(`${a.slot_date}T${a.slot_time || "00:00"}`) : null;
-        const dateB = b.slot_date ? new Date(`${b.slot_date}T${b.slot_time || "00:00"}`) : null;
-        if (!dateA && !dateB) return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-        if (!dateA) return 1;
-        if (!dateB) return -1;
-        const diffA = dateA.getTime() - now.getTime();
-        const diffB = dateB.getTime() - now.getTime();
-        if (diffA >= 0 && diffB >= 0) return diffA - diffB;
-        if (diffA >= 0) return -1;
-        if (diffB >= 0) return 1;
-        return diffB - diffA;
-      });
-      setConsultations(sorted);
-    }
+    fetchConsultations();
   };
 
   if (loading) return null;
@@ -216,7 +258,10 @@ const Dashboard = () => {
                     const displayDate = c.status === "postponed" && c.postponed_date ? c.postponed_date : c.slot_date;
                     const displayTime = c.status === "postponed" && c.postponed_time ? c.postponed_time : c.slot_time;
                     const showCountdown = ["scheduled", "confirmed"].includes(c.status) && displayDate;
-                    const needsResponse = c.status === "postponed" && c.client_response !== "accepted" && c.client_response !== "rejected";
+                    const needsOldPostponeResponse = c.status === "postponed" && c.client_response !== "accepted" && c.client_response !== "rejected";
+                    
+                    // New reschedule system: admin requested reschedule, client needs to respond
+                    const needsRescheduleResponse = c.status === "reschedule_pending" && c.reschedule_requested_by === "admin" && c.client_response !== "accepted" && c.client_response !== "rejected";
 
                     return (
                       <motion.div key={c.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border rounded-lg p-5">
@@ -238,8 +283,8 @@ const Dashboard = () => {
                               </div>
                             )}
 
-                            {/* Postpone response */}
-                            {needsResponse && (
+                            {/* Legacy postpone response */}
+                            {needsOldPostponeResponse && (
                               <div className="mt-3 p-3 bg-yellow-500/5 border border-yellow-500/20 rounded-md">
                                 <p className="text-yellow-400 text-xs font-medium mb-2">
                                   Andre' has proposed a new time: {c.postponed_date && new Date(c.postponed_date + "T12:00:00").toLocaleDateString()}
@@ -253,6 +298,36 @@ const Dashboard = () => {
                                     <X size={12} /> Decline
                                   </Button>
                                 </div>
+                              </div>
+                            )}
+
+                            {/* New reschedule response (admin requested) */}
+                            {needsRescheduleResponse && (
+                              <div className="mt-3 p-3 bg-yellow-500/5 border border-yellow-500/20 rounded-md">
+                                <p className="text-yellow-400 text-xs font-medium mb-2">
+                                  <CalendarClock size={12} className="inline mr-1" />
+                                  Andre' has requested to reschedule to: {c.reschedule_proposed_date && new Date(c.reschedule_proposed_date + "T12:00:00").toLocaleDateString()}
+                                  {c.reschedule_proposed_time && ` at ${formatTime(c.reschedule_proposed_time)}`}
+                                </p>
+                                <div className="flex gap-2">
+                                  <Button size="sm" onClick={() => respondToReschedule(c.id, true, c)} className="gap-1 text-xs">
+                                    <Check size={12} /> Accept
+                                  </Button>
+                                  <Button size="sm" variant="outline" onClick={() => respondToReschedule(c.id, false, c)} className="gap-1 text-xs">
+                                    <X size={12} /> Decline
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Client's own pending reschedule request */}
+                            {c.status === "reschedule_pending" && c.reschedule_requested_by === "client" && (
+                              <div className="mt-3 p-3 bg-primary/5 border border-primary/20 rounded-md">
+                                <p className="text-primary text-xs font-medium">
+                                  <CalendarClock size={12} className="inline mr-1" />
+                                  Your reschedule request is pending approval — proposed: {c.reschedule_proposed_date && new Date(c.reschedule_proposed_date + "T12:00:00").toLocaleDateString()}
+                                  {c.reschedule_proposed_time && ` at ${formatTime(c.reschedule_proposed_time)}`}
+                                </p>
                               </div>
                             )}
                           </div>
@@ -277,7 +352,13 @@ const Dashboard = () => {
                         {/* Chat */}
                         {openChatId === c.id && (
                           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4">
-                            <ConsultationChat consultationId={c.id} clientName={c.name} />
+                            <ConsultationChat 
+                              consultationId={c.id} 
+                              clientName={c.name} 
+                              slotDate={c.slot_date}
+                              slotTime={c.slot_time}
+                              onRescheduleRequested={fetchConsultations}
+                            />
                           </motion.div>
                         )}
                       </motion.div>
