@@ -687,6 +687,9 @@ const Admin = () => {
           {/* Meeting Tab */}
           {tab === "meeting" && <AdminMeeting />}
 
+          {/* Contact Info Tab */}
+          {tab === "contact" && <AdminContactInfo />}
+
           {/* Admins Tab */}
           {tab === "admins" && (
             <div>
