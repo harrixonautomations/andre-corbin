@@ -160,7 +160,7 @@ const Coaching = () => {
                         </h3>
                       </div>
 
-                      <p className="text-muted-foreground text-sm leading-relaxed mb-6">
+                      <p className="text-muted-foreground text-xs leading-relaxed mb-4 line-clamp-3">
                         {plan.description}
                       </p>
 
