@@ -143,19 +143,19 @@ const Coaching = () => {
                       </div>
                     )}
 
-                    <div className="p-5 flex flex-col flex-1">
+                    <div className="p-3.5 flex flex-col flex-1">
                       {/* Icon + Title */}
-                      <div className="flex items-center gap-3 mb-4">
+                      <div className="flex items-center gap-2 mb-2.5">
                         <div
-                          className={`p-2.5 rounded-lg ${
+                          className={`p-1.5 rounded-md ${
                             isPopular
                               ? "bg-primary/15 text-primary"
                               : "bg-secondary text-muted-foreground group-hover:text-primary"
                           } transition-colors`}
                         >
-                          <Icon size={20} />
+                          <Icon size={16} />
                         </div>
-                        <h3 className="font-display text-base font-bold text-foreground leading-tight">
+                        <h3 className="font-display text-sm font-bold text-foreground leading-tight">
                           {plan.name}
                         </h3>
                       </div>
