@@ -15,6 +15,7 @@ interface Plan {
   duration_minutes: number;
   discount_percent: number;
   is_published: boolean;
+  is_popular: boolean;
   display_order: number;
 }
 
