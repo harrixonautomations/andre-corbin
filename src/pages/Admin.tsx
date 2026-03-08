@@ -567,7 +567,7 @@ const Admin = () => {
                       {/* Chat */}
                       {openChatId === c.id && (
                         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4">
-                          <ConsultationChat consultationId={c.id} clientName={c.name} />
+                          <ConsultationChat consultationId={c.id} clientName={c.name} slotDate={c.slot_date} slotTime={c.slot_time} />
                         </motion.div>
                       )}
                     </div>
