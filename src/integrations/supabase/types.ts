@@ -426,6 +426,7 @@ export type Database = {
       }
       testimonials: {
         Row: {
+          company: string
           created_at: string
           display_order: number
           id: string
@@ -434,6 +435,7 @@ export type Database = {
           title: string
         }
         Insert: {
+          company?: string
           created_at?: string
           display_order?: number
           id?: string
@@ -442,6 +444,7 @@ export type Database = {
           title?: string
         }
         Update: {
+          company?: string
           created_at?: string
           display_order?: number
           id?: string
