@@ -155,7 +155,6 @@ const ConsultationChat = ({ consultationId, clientName, slotDate, slotTime, onRe
     const hour = parseInt(h);
     const formattedTime = `${hour % 12 || 12}:${m} ${hour >= 12 ? "PM" : "AM"}`;
 
-    // Update consultation with reschedule proposal
     await supabase.from("consultations").update({
       status: "reschedule_pending",
       reschedule_requested_by: requestedBy,
@@ -164,13 +163,11 @@ const ConsultationChat = ({ consultationId, clientName, slotDate, slotTime, onRe
       client_response: null,
     }).eq("id", consultationId);
 
-    // Send chat message
     const senderName = isAdmin ? "Andre'" : (clientName || "Client");
     const recipientLabel = isAdmin ? (clientName || "Client") : "Andre'";
     const message = `📅 Reschedule Request\n\n${senderName} has requested to reschedule this consultation to ${formattedDate} at ${formattedTime}.\n\n${recipientLabel}, please accept or decline this request from your dashboard.`;
     await handleSend(message);
 
-    // Log the action
     await logAction("reschedule_requested", `${requestedBy} requested reschedule to ${formattedDate} at ${formattedTime}`);
 
     setShowReschedule(false);
@@ -181,64 +178,70 @@ const ConsultationChat = ({ consultationId, clientName, slotDate, slotTime, onRe
   };
 
   return (
-    <div className="flex flex-col h-[400px] bg-card border border-border rounded-lg overflow-hidden">
+    <div className="flex flex-col h-[350px] sm:h-[400px] bg-card border border-border rounded-lg overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-border bg-secondary/50 flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-foreground">
-            {isAdmin ? `Chat with ${clientName || "Client"}` : "Chat with Andre'"}
-          </p>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Consultation Thread</p>
-        </div>
-        <div className="flex gap-1.5">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setShowReschedule(!showReschedule)}
-            className="text-xs gap-1.5 border-yellow-500/30 text-yellow-500 hover:bg-yellow-500/10"
-          >
-            <CalendarClock size={13} /> Reschedule
-          </Button>
-          {isAdmin && (
+      <div className="px-3 sm:px-4 py-2.5 sm:py-3 border-b border-border bg-secondary/50">
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0">
+            <p className="text-xs sm:text-sm font-medium text-foreground truncate">
+              {isAdmin ? `Chat with ${clientName || "Client"}` : "Chat with Andre'"}
+            </p>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-wider">Consultation Thread</p>
+          </div>
+          <div className="flex gap-1 sm:gap-1.5 shrink-0">
             <Button
               size="sm"
               variant="outline"
-              onClick={handleInviteToMeeting}
-              className="text-xs gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
+              onClick={() => setShowReschedule(!showReschedule)}
+              className="text-[10px] sm:text-xs gap-1 sm:gap-1.5 border-yellow-500/30 text-yellow-500 hover:bg-yellow-500/10 h-7 sm:h-8 px-2 sm:px-3"
             >
-              <Video size={13} /> Invite to Meeting
+              <CalendarClock size={12} /> <span className="hidden xs:inline">Reschedule</span>
             </Button>
-          )}
+            {isAdmin && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleInviteToMeeting}
+                className="text-[10px] sm:text-xs gap-1 sm:gap-1.5 border-primary/30 text-primary hover:bg-primary/10 h-7 sm:h-8 px-2 sm:px-3"
+              >
+                <Video size={12} /> <span className="hidden xs:inline">Invite</span>
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Reschedule form */}
       {showReschedule && (
-        <div className="px-4 py-3 border-b border-border bg-yellow-500/5">
-          <p className="text-xs font-medium text-foreground mb-2">Propose a new date & time:</p>
-          <div className="flex gap-2 items-end">
-            <div className="space-y-1 flex-1">
-              <Label className="text-[10px]">Date</Label>
-              <Input type="date" value={rescheduleDate} onChange={(e) => setRescheduleDate(e.target.value)} className="bg-secondary border-border text-xs h-8" />
+        <div className="px-3 sm:px-4 py-2.5 sm:py-3 border-b border-border bg-yellow-500/5">
+          <p className="text-[10px] sm:text-xs font-medium text-foreground mb-2">Propose a new date & time:</p>
+          <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-end">
+            <div className="grid grid-cols-2 gap-2 flex-1">
+              <div className="space-y-1">
+                <Label className="text-[10px]">Date</Label>
+                <Input type="date" value={rescheduleDate} onChange={(e) => setRescheduleDate(e.target.value)} className="bg-secondary border-border text-xs h-8" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px]">Time</Label>
+                <Input type="time" value={rescheduleTime} onChange={(e) => setRescheduleTime(e.target.value)} className="bg-secondary border-border text-xs h-8" />
+              </div>
             </div>
-            <div className="space-y-1 flex-1">
-              <Label className="text-[10px]">Time</Label>
-              <Input type="time" value={rescheduleTime} onChange={(e) => setRescheduleTime(e.target.value)} className="bg-secondary border-border text-xs h-8" />
+            <div className="flex gap-2">
+              <Button size="sm" onClick={handleRescheduleRequest} disabled={!rescheduleDate || !rescheduleTime} className="text-xs h-8 flex-1 sm:flex-none">
+                Send
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setShowReschedule(false)} className="h-8 px-2">
+                <X size={14} />
+              </Button>
             </div>
-            <Button size="sm" onClick={handleRescheduleRequest} disabled={!rescheduleDate || !rescheduleTime} className="text-xs h-8">
-              Send Request
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => setShowReschedule(false)} className="h-8">
-              <X size={14} />
-            </Button>
           </div>
         </div>
       )}
 
       {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 sm:px-4 py-3 space-y-3">
         {messages.length === 0 && (
-          <p className="text-center text-muted-foreground text-sm py-8">
+          <p className="text-center text-muted-foreground text-xs sm:text-sm py-8">
             {isAdmin ? "Start the conversation..." : "Waiting for Andre' to start the chat..."}
           </p>
         )}
@@ -246,10 +249,10 @@ const ConsultationChat = ({ consultationId, clientName, slotDate, slotTime, onRe
           const isMine = msg.sender_id === user?.id;
           return (
             <div key={msg.id} className={cn("flex", isMine ? "justify-end" : "justify-start")}>
-              <div className={cn("max-w-[75%] space-y-0.5 group")}>
+              <div className={cn("max-w-[85%] sm:max-w-[75%] space-y-0.5 group")}>
                 {msg.reply_to_message && (
                   <div className={cn(
-                    "text-[10px] px-2.5 py-1 rounded-t-md border-l-2",
+                    "text-[9px] sm:text-[10px] px-2 sm:px-2.5 py-1 rounded-t-md border-l-2",
                     isMine ? "bg-primary/10 border-primary text-primary/70" : "bg-secondary border-muted-foreground text-muted-foreground"
                   )}>
                     <span className="font-medium">{msg.reply_to_sender}</span>
@@ -257,12 +260,12 @@ const ConsultationChat = ({ consultationId, clientName, slotDate, slotTime, onRe
                   </div>
                 )}
                 <div className={cn(
-                  "px-3 py-2 rounded-lg text-sm relative",
+                  "px-2.5 sm:px-3 py-2 rounded-lg text-xs sm:text-sm relative",
                   isMine ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-secondary text-foreground rounded-bl-sm"
                 )}>
                   <p className="whitespace-pre-wrap break-words">{msg.message}</p>
                   <div className={cn("flex items-center gap-2 mt-1", isMine ? "justify-end" : "justify-start")}>
-                    <span className={cn("text-[9px]", isMine ? "text-primary-foreground/60" : "text-muted-foreground")}>
+                    <span className={cn("text-[8px] sm:text-[9px]", isMine ? "text-primary-foreground/60" : "text-muted-foreground")}>
                       {format(new Date(msg.created_at), "h:mm a")}
                     </span>
                   </div>
@@ -281,26 +284,26 @@ const ConsultationChat = ({ consultationId, clientName, slotDate, slotTime, onRe
 
       {/* Reply bar */}
       {replyTo && (
-        <div className="px-4 py-2 bg-secondary/50 border-t border-border flex items-center justify-between">
-          <div className="text-xs text-muted-foreground truncate flex-1">
+        <div className="px-3 sm:px-4 py-2 bg-secondary/50 border-t border-border flex items-center justify-between gap-2">
+          <div className="text-[10px] sm:text-xs text-muted-foreground truncate flex-1 min-w-0">
             <span className="text-primary font-medium">Replying: </span>{replyTo.message}
           </div>
-          <button onClick={() => setReplyTo(null)}><X size={14} className="text-muted-foreground hover:text-foreground" /></button>
+          <button onClick={() => setReplyTo(null)} className="shrink-0"><X size={14} className="text-muted-foreground hover:text-foreground" /></button>
         </div>
       )}
 
       {/* Input */}
-      <div className="px-3 py-3 border-t border-border flex gap-2">
+      <div className="px-2.5 sm:px-3 py-2.5 sm:py-3 border-t border-border flex gap-2">
         <Input
           ref={inputRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Type a message..."
-          className="bg-secondary border-border text-sm"
+          className="bg-secondary border-border text-xs sm:text-sm"
         />
-        <Button size="icon" onClick={() => handleSend()} disabled={!input.trim() || sending} className="shrink-0">
-          <Send size={16} />
+        <Button size="icon" onClick={() => handleSend()} disabled={!input.trim() || sending} className="shrink-0 h-9 w-9 sm:h-10 sm:w-10">
+          <Send size={14} />
         </Button>
       </div>
     </div>

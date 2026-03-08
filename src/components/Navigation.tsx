@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const navLinks = [
   { to: "/", label: "Home" },
@@ -14,17 +16,31 @@ const navLinks = [
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const isMobile = useIsMobile();
+  const [scrolled, setScrolled] = useState(false);
+
+  // Close menu on route change
+  useEffect(() => {
+    setIsOpen(false);
+  }, [location.pathname]);
+
+  // Track scroll for shadow
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
-      <div className="max-w-7xl mx-auto px-6 md:px-12">
-        <div className="flex items-center justify-between h-16 md:h-20">
-          <Link to="/" className="font-display text-xl md:text-2xl font-semibold tracking-tight text-foreground">
+    <nav className={`fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border transition-shadow duration-300 ${scrolled ? "shadow-lg shadow-background/50" : ""}`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
+        <div className="flex items-center justify-between h-14 sm:h-16 md:h-20">
+          <Link to="/" className="font-display text-lg sm:text-xl md:text-2xl font-semibold tracking-tight text-foreground">
             Andre' <span className="text-gradient-gold">Corbin</span>
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden lg:flex items-center gap-8">
             {navLinks.map((link) => (
               <Link
                 key={link.to}
@@ -46,10 +62,10 @@ const Navigation = () => {
             </Link>
           </div>
 
-          {/* Mobile Toggle */}
+          {/* Mobile/Tablet Toggle */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden text-foreground"
+            className="lg:hidden text-foreground p-2 -mr-2 touch-manipulation"
             aria-label="Toggle menu"
           >
             {isOpen ? <X size={24} /> : <Menu size={24} />}
@@ -57,41 +73,90 @@ const Navigation = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-background border-b border-border overflow-hidden"
-          >
-            <div className="px-6 py-6 flex flex-col gap-4">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  onClick={() => setIsOpen(false)}
-                  className={`text-base font-medium tracking-wide transition-colors ${
-                    location.pathname === link.to
-                      ? "text-primary"
-                      : "text-muted-foreground"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <Link
-                to="/book-session"
-                onClick={() => setIsOpen(false)}
-                className="mt-2 px-5 py-3 bg-primary text-primary-foreground text-sm font-medium rounded-sm tracking-wide uppercase text-center"
+      {/* Mobile: Sheet from right side */}
+      {isMobile && (
+        <Sheet open={isOpen} onOpenChange={setIsOpen}>
+          <SheetContent side="right" className="w-[280px] bg-background border-border p-0">
+            <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+            <div className="flex flex-col h-full pt-12 pb-8 px-6">
+              <div className="flex flex-col gap-1 flex-1">
+                {navLinks.map((link, i) => (
+                  <motion.div
+                    key={link.to}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                  >
+                    <Link
+                      to={link.to}
+                      onClick={() => setIsOpen(false)}
+                      className={`block px-4 py-3.5 rounded-lg text-base font-medium tracking-wide transition-all duration-200 ${
+                        location.pathname === link.to
+                          ? "text-primary bg-primary/10"
+                          : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                      }`}
+                    >
+                      {link.label}
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
               >
-                Book a Session
-              </Link>
+                <Link
+                  to="/book-session"
+                  onClick={() => setIsOpen(false)}
+                  className="block w-full px-5 py-3.5 bg-primary text-primary-foreground text-sm font-medium rounded-lg tracking-wide uppercase text-center hover:bg-gold-light transition-colors duration-300"
+                >
+                  Book a Session
+                </Link>
+              </motion.div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </SheetContent>
+        </Sheet>
+      )}
+
+      {/* Tablet: dropdown from top */}
+      {!isMobile && (
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.25, ease: "easeInOut" }}
+              className="lg:hidden bg-background border-b border-border overflow-hidden"
+            >
+              <div className="px-6 py-5 flex flex-wrap gap-3 items-center justify-center">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.to}
+                    to={link.to}
+                    onClick={() => setIsOpen(false)}
+                    className={`px-4 py-2.5 rounded-lg text-sm font-medium tracking-wide transition-all duration-200 ${
+                      location.pathname === link.to
+                        ? "text-primary bg-primary/10"
+                        : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+                <Link
+                  to="/book-session"
+                  onClick={() => setIsOpen(false)}
+                  className="px-5 py-2.5 bg-primary text-primary-foreground text-sm font-medium rounded-lg tracking-wide uppercase hover:bg-gold-light transition-colors duration-300"
+                >
+                  Book a Session
+                </Link>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
     </nav>
   );
 };
