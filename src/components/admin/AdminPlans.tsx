@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { Plus, Edit2, Trash2, Eye, EyeOff, ArrowUp, ArrowDown, X, Percent } from "lucide-react";
+import { Plus, Edit2, Trash2, Eye, EyeOff, ArrowUp, ArrowDown, X, Percent, Star } from "lucide-react";
 
 interface Plan {
   id: string;
