@@ -515,7 +515,22 @@ const Admin = () => {
                     <div className="space-y-2 md:col-span-2"><Label>Description</Label><Textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={3} className="bg-secondary border-border" /></div>
                     <div className="space-y-2"><Label>Price ($)</Label><Input type="number" step="0.01" min="0" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} required className="bg-secondary border-border" /></div>
                     <div className="space-y-2"><Label>Amazon Link</Label><Input value={formData.amazon_url} onChange={(e) => setFormData({ ...formData, amazon_url: e.target.value })} className="bg-secondary border-border" /></div>
-                    <div className="space-y-2"><Label>Cover Image</Label><Input type="file" accept="image/*" onChange={(e) => setCoverFile(e.target.files?.[0] || null)} className="bg-secondary border-border" /></div>
+                    <div className="space-y-2">
+                      <Label>Cover Image (6×9 / 2:3, PNG or JPEG)</Label>
+                      <Input type="file" accept="image/png,image/jpeg" onChange={(e) => setCoverFile(e.target.files?.[0] || null)} className="bg-secondary border-border" />
+                      {(coverFile || editingBook?.cover_image_url) && (
+                        <div className="mt-2">
+                          <div className="w-20 rounded border border-border overflow-hidden" style={{ aspectRatio: '2/3' }}>
+                            <img
+                              src={coverFile ? URL.createObjectURL(coverFile) : editingBook?.cover_image_url || ''}
+                              alt="Cover preview"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">2:3 aspect ratio (6×9 inches)</p>
+                        </div>
+                      )}
+                    </div>
                     <div className="space-y-2">
                       <Label>Manuscript (PDF)</Label>
                       <Input type="file" accept=".pdf" onChange={(e) => { if (e.target.files?.[0]) handleManuscriptChange(e.target.files[0]); }} className="bg-secondary border-border" />
@@ -532,7 +547,15 @@ const Admin = () => {
                 <div className="space-y-3">
                   {books.map((book) => (
                     <div key={book.id} className="flex items-center gap-4 bg-card border border-border rounded-lg p-4">
-                      {book.cover_image_url && <img src={book.cover_image_url} alt="" className="w-12 h-16 object-cover rounded" />}
+                      {book.cover_image_url ? (
+                        <div className="w-12 rounded border border-border overflow-hidden shrink-0" style={{ aspectRatio: '2/3' }}>
+                          <img src={book.cover_image_url} alt="" className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className="w-12 rounded border border-border bg-secondary flex items-center justify-center shrink-0" style={{ aspectRatio: '2/3' }}>
+                          <BookOpen size={16} className="text-muted-foreground" />
+                        </div>
+                      )}
                       <div className="flex-1 min-w-0">
                         <p className="text-foreground font-medium text-sm truncate">{book.title}</p>
                         <p className="text-muted-foreground text-xs">${book.price} · {book.page_count}p</p>
