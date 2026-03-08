@@ -116,8 +116,7 @@ const Coaching = () => {
               } gap-4 lg:gap-5 items-stretch`}
             >
               {plans.map((plan, i) => {
-                const isMiddle =
-                  plans.length >= 3 && i === Math.floor(plans.length / 2);
+                const isPopular = plan.is_popular;
                 const finalPrice =
                   plan.discount_percent > 0
                     ? plan.price * (1 - plan.discount_percent / 100)

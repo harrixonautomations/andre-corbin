@@ -89,6 +89,16 @@ const AdminPlans = () => {
     toast({ title: p.is_published ? "Plan unpublished" : "Plan published" });
   };
 
+  const togglePopular = async (p: Plan) => {
+    // If marking as popular, unmark all others first
+    if (!p.is_popular) {
+      await supabase.from("consultation_plans").update({ is_popular: false } as any).neq("id", p.id);
+    }
+    await supabase.from("consultation_plans").update({ is_popular: !p.is_popular } as any).eq("id", p.id);
+    fetchPlans();
+    toast({ title: p.is_popular ? "Removed popular badge" : "Marked as most popular" });
+  };
+
   const reorder = async (index: number, direction: -1 | 1) => {
     const newIndex = index + direction;
     if (newIndex < 0 || newIndex >= plans.length) return;
