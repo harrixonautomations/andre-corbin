@@ -48,7 +48,7 @@ const Coaching = () => {
       <Navigation />
 
       {/* Hero */}
-      <section className="pt-32 pb-12 section-padding bg-background relative overflow-hidden">
+      <section className="pt-24 sm:pt-32 pb-10 sm:pb-12 section-padding bg-background relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.03]" style={{
           backgroundImage: "radial-gradient(circle at 1px 1px, hsl(var(--primary)) 1px, transparent 0)",
           backgroundSize: "40px 40px",
