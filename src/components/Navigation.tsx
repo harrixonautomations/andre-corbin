@@ -63,6 +63,31 @@ const Navigation = () => {
             >
               Book a Session
             </Link>
+            {user ? (
+              <>
+                <Link to="/dashboard">
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <LayoutDashboard size={14} /> Dashboard
+                  </Button>
+                </Link>
+                <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground" onClick={signOut}>
+                  <LogOut size={14} /> Sign Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/auth">
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <LogIn size={14} /> Sign In
+                  </Button>
+                </Link>
+                <Link to="/auth?signup=true">
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <UserPlus size={14} /> Sign Up
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile/Tablet Toggle */}
