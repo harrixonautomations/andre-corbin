@@ -3,6 +3,16 @@ import { motion } from "framer-motion";
 import { Play } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
+const toEmbedUrl = (url: string): { embed: string; isEmbed: boolean } => {
+  if (url.includes("youtube.com/embed") || url.includes("player.vimeo.com"))
+    return { embed: url, isEmbed: true };
+  const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+  if (ytMatch) return { embed: `https://www.youtube.com/embed/${ytMatch[1]}`, isEmbed: true };
+  const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+  if (vimeoMatch) return { embed: `https://player.vimeo.com/video/${vimeoMatch[1]}`, isEmbed: true };
+  return { embed: url, isEmbed: false };
+};
+
 const VideoSection = () => {
   const [videoUrl, setVideoUrl] = useState("");
   const [playing, setPlaying] = useState(false);
@@ -18,7 +28,7 @@ const VideoSection = () => {
     })();
   }, []);
 
-  const isEmbedUrl = videoUrl.includes("youtube.com/embed") || videoUrl.includes("player.vimeo.com");
+  const { embed, isEmbed: isEmbedUrl } = toEmbedUrl(videoUrl);
 
   return (
     <section className="section-padding bg-background">
@@ -48,7 +58,7 @@ const VideoSection = () => {
           {videoUrl && isEmbedUrl ? (
             playing ? (
               <iframe
-                src={`${videoUrl}?autoplay=1`}
+                src={`${embed}?autoplay=1`}
                 className="w-full h-full"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
