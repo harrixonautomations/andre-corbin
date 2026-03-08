@@ -15,6 +15,7 @@ import AdminAvailability from "@/components/admin/AdminAvailability";
 import AdminSamples from "@/components/admin/AdminSamples";
 import AdminPlans from "@/components/admin/AdminPlans";
 import AdminDiscounts from "@/components/admin/AdminDiscounts";
+import AdminVideo from "@/components/admin/AdminVideo";
 import {
   BookOpen, Plus, Trash2, Edit2, Calendar, LogOut, X, Upload,
   DollarSign, ShoppingCart, Users, Package, Truck, Clock, CheckCircle2,
@@ -79,7 +80,7 @@ const PRIMARY_ADMIN_EMAIL = "harrixonautomations@gmail.com";
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
   const { toast } = useToast();
-  const [tab, setTab] = useState<"overview" | "books" | "orders" | "consultations" | "availability" | "plans" | "discounts" | "samples" | "admins">("overview");
+  const [tab, setTab] = useState<"overview" | "books" | "orders" | "consultations" | "availability" | "plans" | "discounts" | "samples" | "video" | "admins">("overview");
   const [books, setBooks] = useState<BookRow[]>([]);
   const [consultations, setConsultations] = useState<ConsultationRow[]>([]);
   const [orders, setOrders] = useState<OrderRow[]>([]);
@@ -294,6 +295,7 @@ const Admin = () => {
     { key: "plans" as const, label: "Plans", icon: Package },
     { key: "discounts" as const, label: "Discounts", icon: Tag },
     { key: "samples" as const, label: "Samples", icon: FileText },
+    { key: "video" as const, label: "Video", icon: Upload },
     { key: "admins" as const, label: "Admins", icon: Users },
   ];
 
@@ -564,6 +566,9 @@ const Admin = () => {
 
           {/* Samples Tab */}
           {tab === "samples" && <AdminSamples />}
+
+          {/* Video Tab */}
+          {tab === "video" && <AdminVideo />}
 
           {/* Admins Tab */}
           {tab === "admins" && (
