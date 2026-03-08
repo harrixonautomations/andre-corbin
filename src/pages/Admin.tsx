@@ -18,7 +18,7 @@ import AdminDiscounts from "@/components/admin/AdminDiscounts";
 import {
   BookOpen, Plus, Trash2, Edit2, Calendar, LogOut, X, Upload,
   DollarSign, ShoppingCart, Users, Package, Truck, Clock, CheckCircle2,
-  UserPlus, UserMinus, CalendarClock, MessageCircle, Tag, ArrowRight,
+  UserPlus, UserMinus, CalendarClock, MessageCircle, Tag, ArrowRight, FileText,
 } from "lucide-react";
 import { PDFDocument } from "pdf-lib";
 
