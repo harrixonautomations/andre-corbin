@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import ConsultationChat from "@/components/ConsultationChat";
 import AdminAvailability from "@/components/admin/AdminAvailability";
+import AdminSamples from "@/components/admin/AdminSamples";
 import AdminPlans from "@/components/admin/AdminPlans";
 import AdminDiscounts from "@/components/admin/AdminDiscounts";
 import {
