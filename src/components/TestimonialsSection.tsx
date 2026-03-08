@@ -55,7 +55,9 @@ const TestimonialsSection = () => {
               </p>
               <div>
                 <p className="text-foreground font-medium text-sm">{t.name}</p>
-                <p className="text-muted-foreground text-xs">{t.title}</p>
+                <p className="text-muted-foreground text-xs">
+                  {[t.title, t.company].filter(Boolean).join(", ")}
+                </p>
               </div>
             </motion.div>
           ))}
