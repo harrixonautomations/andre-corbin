@@ -143,7 +143,7 @@ const Coaching = () => {
                       </div>
                     )}
 
-                    <div className="p-8 flex flex-col flex-1">
+                    <div className="p-5 flex flex-col flex-1">
                       {/* Icon + Title */}
                       <div className="flex items-center gap-3 mb-4">
                         <div
