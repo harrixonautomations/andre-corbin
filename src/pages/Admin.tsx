@@ -547,7 +547,15 @@ const Admin = () => {
                 <div className="space-y-3">
                   {books.map((book) => (
                     <div key={book.id} className="flex items-center gap-4 bg-card border border-border rounded-lg p-4">
-                      {book.cover_image_url && <img src={book.cover_image_url} alt="" className="w-12 h-16 object-cover rounded" />}
+                      {book.cover_image_url ? (
+                        <div className="w-12 rounded border border-border overflow-hidden shrink-0" style={{ aspectRatio: '2/3' }}>
+                          <img src={book.cover_image_url} alt="" className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className="w-12 rounded border border-border bg-secondary flex items-center justify-center shrink-0" style={{ aspectRatio: '2/3' }}>
+                          <BookOpen size={16} className="text-muted-foreground" />
+                        </div>
+                      )}
                       <div className="flex-1 min-w-0">
                         <p className="text-foreground font-medium text-sm truncate">{book.title}</p>
                         <p className="text-muted-foreground text-xs">${book.price} · {book.page_count}p</p>
