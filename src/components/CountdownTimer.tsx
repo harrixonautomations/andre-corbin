@@ -44,11 +44,11 @@ const CountdownTimer = ({ targetDate, targetTime }: CountdownTimerProps) => {
   ];
 
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="flex items-center gap-1 sm:gap-1.5">
       {blocks.map((b) => (
-        <div key={b.label} className="flex flex-col items-center bg-secondary rounded px-2 py-1 min-w-[38px]">
-          <span className="text-foreground font-semibold text-sm tabular-nums">{String(b.value).padStart(2, "0")}</span>
-          <span className="text-muted-foreground text-[9px] uppercase tracking-wider">{b.label}</span>
+        <div key={b.label} className="flex flex-col items-center bg-secondary rounded px-1.5 sm:px-2 py-1 min-w-[32px] sm:min-w-[38px]">
+          <span className="text-foreground font-semibold text-xs sm:text-sm tabular-nums">{String(b.value).padStart(2, "0")}</span>
+          <span className="text-muted-foreground text-[8px] sm:text-[9px] uppercase tracking-wider">{b.label}</span>
         </div>
       ))}
     </div>
