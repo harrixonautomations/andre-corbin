@@ -224,7 +224,7 @@ const Coaching = () => {
                       <Link
                         to={`/book-session?plan=${plan.id}`}
                         className={`flex items-center justify-center gap-2 px-4 py-3 font-semibold text-xs tracking-wider uppercase rounded-lg transition-all duration-300 ${
-                          isMiddle
+                          isPopular
                             ? "bg-primary text-primary-foreground hover:bg-gold-light hover:shadow-lg hover:shadow-primary/20"
                             : "border border-border text-foreground hover:border-primary hover:text-primary hover:bg-primary/5"
                         }`}
