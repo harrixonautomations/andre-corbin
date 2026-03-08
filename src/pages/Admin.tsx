@@ -293,6 +293,7 @@ const Admin = () => {
     { key: "availability" as const, label: "Calendar", icon: CalendarClock },
     { key: "plans" as const, label: "Plans", icon: Package },
     { key: "discounts" as const, label: "Discounts", icon: Tag },
+    { key: "samples" as const, label: "Samples", icon: FileText },
     { key: "admins" as const, label: "Admins", icon: Users },
   ];
 
