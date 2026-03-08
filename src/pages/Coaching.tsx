@@ -131,7 +131,7 @@ const Coaching = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: i * 0.15 }}
                     className={`relative rounded-xl flex flex-col overflow-hidden transition-all duration-300 group ${
-                      isMiddle
+                      isPopular
                         ? "bg-card border-2 border-primary glow-gold"
                         : "bg-card border border-border hover:border-primary/40"
                     }`}
