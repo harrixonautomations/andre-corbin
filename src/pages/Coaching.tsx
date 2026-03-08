@@ -195,9 +195,9 @@ const Coaching = () => {
                       </div>
 
                       {/* Duration */}
-                      <div className="flex items-center gap-1.5 text-muted-foreground text-xs mb-4 pb-4 border-b border-border">
-                        <Clock size={12} className="text-primary/70" />
-                        {plan.duration_minutes} min session
+                      <div className="flex items-center gap-1 text-muted-foreground text-[11px] mb-2.5 pb-2.5 border-b border-border">
+                        <Clock size={10} className="text-primary/70" />
+                        {plan.duration_minutes} min
                       </div>
 
                       {/* Features */}
