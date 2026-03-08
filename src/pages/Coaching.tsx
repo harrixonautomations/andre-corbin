@@ -205,10 +205,10 @@ const Coaching = () => {
                         {features.map((feat, fi) => (
                           <li
                             key={fi}
-                            className="flex items-start gap-2.5 text-sm"
+                            className="flex items-start gap-2 text-xs"
                           >
                             <Check
-                              size={14}
+                              size={12}
                               className={`mt-0.5 shrink-0 ${
                                 isMiddle
                                   ? "text-primary"
