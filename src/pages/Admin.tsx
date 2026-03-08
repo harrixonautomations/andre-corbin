@@ -572,6 +572,9 @@ const Admin = () => {
           {/* Video Tab */}
           {tab === "video" && <AdminVideo />}
 
+          {/* Testimonials Tab */}
+          {tab === "testimonials" && <AdminTestimonials />}
+
           {/* Admins Tab */}
           {tab === "admins" && (
             <div>
