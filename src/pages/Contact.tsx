@@ -1,11 +1,30 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { ArrowRight, Mail, MapPin } from "lucide-react";
 
 const Contact = () => {
   const [submitted, setSubmitted] = useState(false);
+  const [contactEmail, setContactEmail] = useState("hello@andrecorbin.pro");
+  const [contactLocation, setContactLocation] = useState("New York City & Virtual — coaching clients worldwide.");
+
+  useEffect(() => {
+    const load = async () => {
+      const { data } = await supabase
+        .from("site_settings")
+        .select("key, value")
+        .in("key", ["contact_email", "contact_location"]);
+      if (data) {
+        data.forEach((row) => {
+          if (row.key === "contact_email") setContactEmail(row.value);
+          if (row.key === "contact_location") setContactLocation(row.value);
+        });
+      }
+    };
+    load();
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,39 +67,12 @@ const Contact = () => {
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                    <input
-                      type="text"
-                      required
-                      maxLength={100}
-                      placeholder="First Name"
-                      className="w-full px-4 sm:px-5 py-3 sm:py-3.5 bg-card border border-border rounded-sm text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:border-primary transition-colors"
-                    />
-                    <input
-                      type="text"
-                      required
-                      maxLength={100}
-                      placeholder="Last Name"
-                      className="w-full px-4 sm:px-5 py-3 sm:py-3.5 bg-card border border-border rounded-sm text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:border-primary transition-colors"
-                    />
+                    <input type="text" required maxLength={100} placeholder="First Name" className="w-full px-4 sm:px-5 py-3 sm:py-3.5 bg-card border border-border rounded-sm text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:border-primary transition-colors" />
+                    <input type="text" required maxLength={100} placeholder="Last Name" className="w-full px-4 sm:px-5 py-3 sm:py-3.5 bg-card border border-border rounded-sm text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:border-primary transition-colors" />
                   </div>
-                  <input
-                    type="email"
-                    required
-                    maxLength={255}
-                    placeholder="Email"
-                    className="w-full px-4 sm:px-5 py-3 sm:py-3.5 bg-card border border-border rounded-sm text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:border-primary transition-colors"
-                  />
-                  <textarea
-                    required
-                    maxLength={1000}
-                    rows={4}
-                    placeholder="Tell Andre' a bit about yourself and what you're looking for..."
-                    className="w-full px-4 sm:px-5 py-3 sm:py-3.5 bg-card border border-border rounded-sm text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:border-primary transition-colors resize-none"
-                  />
-                  <button
-                    type="submit"
-                    className="w-full sm:w-auto px-8 py-3.5 sm:py-4 bg-primary text-primary-foreground font-semibold text-sm tracking-wider uppercase rounded-sm hover:bg-gold-light transition-colors duration-300 flex items-center justify-center gap-2"
-                  >
+                  <input type="email" required maxLength={255} placeholder="Email" className="w-full px-4 sm:px-5 py-3 sm:py-3.5 bg-card border border-border rounded-sm text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:border-primary transition-colors" />
+                  <textarea required maxLength={1000} rows={4} placeholder="Tell Andre' a bit about yourself and what you're looking for..." className="w-full px-4 sm:px-5 py-3 sm:py-3.5 bg-card border border-border rounded-sm text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:border-primary transition-colors resize-none" />
+                  <button type="submit" className="w-full sm:w-auto px-8 py-3.5 sm:py-4 bg-primary text-primary-foreground font-semibold text-sm tracking-wider uppercase rounded-sm hover:bg-gold-light transition-colors duration-300 flex items-center justify-center gap-2">
                     Send Message <ArrowRight size={16} />
                   </button>
                 </form>
@@ -99,8 +91,8 @@ const Contact = () => {
                   <Mail size={18} className="text-primary" />
                   <h3 className="font-semibold text-foreground text-sm">Email</h3>
                 </div>
-                <a href="mailto:hello@andrecorbin.pro" className="text-muted-foreground text-sm hover:text-primary transition-colors break-all">
-                  hello@andrecorbin.pro
+                <a href={`mailto:${contactEmail}`} className="text-muted-foreground text-sm hover:text-primary transition-colors break-all">
+                  {contactEmail}
                 </a>
               </div>
               <div>
@@ -109,7 +101,7 @@ const Contact = () => {
                   <h3 className="font-semibold text-foreground text-sm">Location</h3>
                 </div>
                 <p className="text-muted-foreground text-sm">
-                  New York City & Virtual — coaching clients worldwide.
+                  {contactLocation}
                 </p>
               </div>
               <div className="bg-card border border-border rounded-lg p-5 sm:p-6">
