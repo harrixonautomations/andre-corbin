@@ -132,7 +132,7 @@ const Coaching = () => {
                     transition={{ duration: 0.6, delay: i * 0.15 }}
                     className={`relative rounded-xl flex flex-col overflow-hidden transition-all duration-300 group ${
                       isMiddle
-                        ? "bg-card border-2 border-primary glow-gold scale-[1.02] md:scale-105"
+                        ? "bg-card border-2 border-primary glow-gold"
                         : "bg-card border border-border hover:border-primary/40"
                     }`}
                   >
