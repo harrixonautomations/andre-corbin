@@ -104,11 +104,15 @@ const Coaching = () => {
             <div
               className={`grid grid-cols-1 ${
                 plans.length === 1
-                  ? "max-w-md mx-auto"
+                  ? "max-w-sm mx-auto"
                   : plans.length === 2
-                  ? "md:grid-cols-2 max-w-4xl mx-auto"
-                  : "md:grid-cols-3"
-              } gap-6 lg:gap-8 items-stretch`}
+                  ? "sm:grid-cols-2 max-w-3xl mx-auto"
+                  : plans.length <= 3
+                  ? "sm:grid-cols-2 lg:grid-cols-3"
+                  : plans.length === 4
+                  ? "sm:grid-cols-2 lg:grid-cols-4"
+                  : "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"
+              } gap-4 lg:gap-5 items-stretch`}
             >
               {plans.map((plan, i) => {
                 const isMiddle =
