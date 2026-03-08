@@ -3,10 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Reply, X, Video } from "lucide-react";
+import { Send, Reply, X, Video, CalendarClock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { format, formatDistanceToNow, differenceInMinutes, differenceInHours } from "date-fns";
+import { format, differenceInMinutes, differenceInHours } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
 
 interface ChatMessage {
   id: string;
@@ -24,14 +26,19 @@ interface ConsultationChatProps {
   clientName?: string;
   slotDate?: string | null;
   slotTime?: string | null;
+  onRescheduleRequested?: () => void;
 }
 
-const ConsultationChat = ({ consultationId, clientName, slotDate, slotTime }: ConsultationChatProps) => {
+const ConsultationChat = ({ consultationId, clientName, slotDate, slotTime, onRescheduleRequested }: ConsultationChatProps) => {
   const { user, isAdmin } = useAuth();
+  const { toast } = useToast();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
   const [sending, setSending] = useState(false);
+  const [showReschedule, setShowReschedule] = useState(false);
+  const [rescheduleDate, setRescheduleDate] = useState("");
+  const [rescheduleTime, setRescheduleTime] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -50,9 +57,7 @@ const ConsultationChat = ({ consultationId, clientName, slotDate, slotTime }: Co
 
     if (data) {
       const enriched: ChatMessage[] = data.map((msg) => {
-        const replyMsg = msg.reply_to_id
-          ? data.find((m) => m.id === msg.reply_to_id)
-          : null;
+        const replyMsg = msg.reply_to_id ? data.find((m) => m.id === msg.reply_to_id) : null;
         return {
           ...msg,
           reply_to_message: replyMsg?.message,
@@ -66,16 +71,10 @@ const ConsultationChat = ({ consultationId, clientName, slotDate, slotTime }: Co
 
   useEffect(() => {
     fetchMessages();
-
     const channel = supabase
       .channel(`chat-${consultationId}`)
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "chat_messages", filter: `consultation_id=eq.${consultationId}` },
-        () => fetchMessages()
-      )
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages", filter: `consultation_id=eq.${consultationId}` }, () => fetchMessages())
       .subscribe();
-
     return () => { supabase.removeChannel(channel); };
   }, [consultationId, fetchMessages]);
 
@@ -96,65 +95,89 @@ const ConsultationChat = ({ consultationId, clientName, slotDate, slotTime }: Co
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
+  };
+
+  const logAction = async (action: string, details: string) => {
+    if (!user) return;
+    await supabase.from("consultation_logs").insert({
+      consultation_id: consultationId,
+      user_id: user.id,
+      action,
+      details,
+    });
   };
 
   const handleInviteToMeeting = async () => {
-    // Fetch meeting credentials from site_settings
     const { data } = await supabase
       .from("site_settings")
       .select("key, value")
       .in("key", ["zoom_meeting_id", "zoom_password", "zoom_meeting_link"]);
 
-    if (!data || data.length === 0) {
-      return;
-    }
-
+    if (!data || data.length === 0) return;
     const settings: Record<string, string> = {};
     data.forEach((s) => { settings[s.key] = s.value; });
-
     const meetingId = settings["zoom_meeting_id"];
     const password = settings["zoom_password"];
     const meetingLink = settings["zoom_meeting_link"];
-
     if (!meetingId) return;
 
     const name = clientName || "there";
-
-    // Calculate time remaining
     let timeRemainingText = "soon";
     if (slotDate && slotTime) {
       const sessionDate = new Date(`${slotDate}T${slotTime}`);
       const now = new Date();
       const minutesLeft = differenceInMinutes(sessionDate, now);
       const hoursLeft = differenceInHours(sessionDate, now);
-
-      if (minutesLeft <= 0) {
-        timeRemainingText = "now";
-      } else if (minutesLeft < 60) {
-        timeRemainingText = `${minutesLeft} minute${minutesLeft !== 1 ? "s" : ""}`;
-      } else {
+      if (minutesLeft <= 0) timeRemainingText = "now";
+      else if (minutesLeft < 60) timeRemainingText = `${minutesLeft} minute${minutesLeft !== 1 ? "s" : ""}`;
+      else {
         const remainingMins = minutesLeft % 60;
         timeRemainingText = `${hoursLeft} hour${hoursLeft !== 1 ? "s" : ""}${remainingMins > 0 ? ` and ${remainingMins} minute${remainingMins !== 1 ? "s" : ""}` : ""}`;
       }
     }
 
-    let message = `Hi ${name}, I am inviting you to our consultation meeting which is due in ${timeRemainingText}.\n\nYou can join the meeting using these details:\n\n📋 Meeting ID: ${meetingId}\n🔑 Password: ${password}`;
-
-    if (meetingLink) {
-      message += `\n🔗 Join Link: ${meetingLink}`;
-    }
-
-    if (timeRemainingText !== "now") {
-      message += `\n\nThe meeting starts in ${timeRemainingText}. See you there!`;
-    } else {
-      message += `\n\nThe meeting is starting now. Join when you're ready!`;
-    }
+    let message = `Hi ${name}, I am inviting you to our consultation meeting which is due in ${timeRemainingText}.\n\n📋 Meeting ID: ${meetingId}\n🔑 Password: ${password}`;
+    if (meetingLink) message += `\n🔗 Join Link: ${meetingLink}`;
+    if (timeRemainingText !== "now") message += `\n\nThe meeting starts in ${timeRemainingText}. See you there!`;
+    else message += `\n\nThe meeting is starting now. Join when you're ready!`;
 
     await handleSend(message);
+    await logAction("meeting_invite", `Meeting invite sent to ${name}`);
+  };
+
+  const handleRescheduleRequest = async () => {
+    if (!rescheduleDate || !rescheduleTime || !user) return;
+
+    const requestedBy = isAdmin ? "admin" : "client";
+    const formattedDate = new Date(rescheduleDate + "T12:00:00").toLocaleDateString();
+    const [h, m] = rescheduleTime.split(":");
+    const hour = parseInt(h);
+    const formattedTime = `${hour % 12 || 12}:${m} ${hour >= 12 ? "PM" : "AM"}`;
+
+    // Update consultation with reschedule proposal
+    await supabase.from("consultations").update({
+      status: "reschedule_pending",
+      reschedule_requested_by: requestedBy,
+      reschedule_proposed_date: rescheduleDate,
+      reschedule_proposed_time: rescheduleTime,
+      client_response: null,
+    }).eq("id", consultationId);
+
+    // Send chat message
+    const senderName = isAdmin ? "Andre'" : (clientName || "Client");
+    const recipientLabel = isAdmin ? (clientName || "Client") : "Andre'";
+    const message = `📅 Reschedule Request\n\n${senderName} has requested to reschedule this consultation to ${formattedDate} at ${formattedTime}.\n\n${recipientLabel}, please accept or decline this request from your dashboard.`;
+    await handleSend(message);
+
+    // Log the action
+    await logAction("reschedule_requested", `${requestedBy} requested reschedule to ${formattedDate} at ${formattedTime}`);
+
+    setShowReschedule(false);
+    setRescheduleDate("");
+    setRescheduleTime("");
+    toast({ title: "Reschedule request sent" });
+    onRescheduleRequested?.();
   };
 
   return (
@@ -167,17 +190,50 @@ const ConsultationChat = ({ consultationId, clientName, slotDate, slotTime }: Co
           </p>
           <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Consultation Thread</p>
         </div>
-        {isAdmin && (
+        <div className="flex gap-1.5">
           <Button
             size="sm"
             variant="outline"
-            onClick={handleInviteToMeeting}
-            className="text-xs gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
+            onClick={() => setShowReschedule(!showReschedule)}
+            className="text-xs gap-1.5 border-yellow-500/30 text-yellow-500 hover:bg-yellow-500/10"
           >
-            <Video size={13} /> Invite to Meeting
+            <CalendarClock size={13} /> Reschedule
           </Button>
-        )}
+          {isAdmin && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleInviteToMeeting}
+              className="text-xs gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
+            >
+              <Video size={13} /> Invite to Meeting
+            </Button>
+          )}
+        </div>
       </div>
+
+      {/* Reschedule form */}
+      {showReschedule && (
+        <div className="px-4 py-3 border-b border-border bg-yellow-500/5">
+          <p className="text-xs font-medium text-foreground mb-2">Propose a new date & time:</p>
+          <div className="flex gap-2 items-end">
+            <div className="space-y-1 flex-1">
+              <Label className="text-[10px]">Date</Label>
+              <Input type="date" value={rescheduleDate} onChange={(e) => setRescheduleDate(e.target.value)} className="bg-secondary border-border text-xs h-8" />
+            </div>
+            <div className="space-y-1 flex-1">
+              <Label className="text-[10px]">Time</Label>
+              <Input type="time" value={rescheduleTime} onChange={(e) => setRescheduleTime(e.target.value)} className="bg-secondary border-border text-xs h-8" />
+            </div>
+            <Button size="sm" onClick={handleRescheduleRequest} disabled={!rescheduleDate || !rescheduleTime} className="text-xs h-8">
+              Send Request
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setShowReschedule(false)} className="h-8">
+              <X size={14} />
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
@@ -194,9 +250,7 @@ const ConsultationChat = ({ consultationId, clientName, slotDate, slotTime }: Co
                 {msg.reply_to_message && (
                   <div className={cn(
                     "text-[10px] px-2.5 py-1 rounded-t-md border-l-2",
-                    isMine
-                      ? "bg-primary/10 border-primary text-primary/70"
-                      : "bg-secondary border-muted-foreground text-muted-foreground"
+                    isMine ? "bg-primary/10 border-primary text-primary/70" : "bg-secondary border-muted-foreground text-muted-foreground"
                   )}>
                     <span className="font-medium">{msg.reply_to_sender}</span>
                     <p className="truncate">{msg.reply_to_message}</p>
@@ -204,9 +258,7 @@ const ConsultationChat = ({ consultationId, clientName, slotDate, slotTime }: Co
                 )}
                 <div className={cn(
                   "px-3 py-2 rounded-lg text-sm relative",
-                  isMine
-                    ? "bg-primary text-primary-foreground rounded-br-sm"
-                    : "bg-secondary text-foreground rounded-bl-sm"
+                  isMine ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-secondary text-foreground rounded-bl-sm"
                 )}>
                   <p className="whitespace-pre-wrap break-words">{msg.message}</p>
                   <div className={cn("flex items-center gap-2 mt-1", isMine ? "justify-end" : "justify-start")}>
