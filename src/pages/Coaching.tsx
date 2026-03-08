@@ -165,19 +165,19 @@ const Coaching = () => {
                       </p>
 
                       {/* Price block */}
-                      <div className="mb-6">
-                        <div className="flex items-baseline gap-2">
+                      <div className="mb-4">
+                        <div className="flex items-baseline gap-1.5">
                           {plan.discount_percent > 0 ? (
                             <>
-                              <span className="text-muted-foreground line-through text-base">
+                              <span className="text-muted-foreground line-through text-xs">
                                 ${plan.price.toFixed(0)}
                               </span>
-                              <span className="text-foreground font-bold text-4xl tracking-tight">
+                              <span className="text-foreground font-bold text-2xl tracking-tight">
                                 ${finalPrice.toFixed(0)}
                               </span>
                             </>
                           ) : (
-                            <span className="text-foreground font-bold text-4xl tracking-tight">
+                            <span className="text-foreground font-bold text-2xl tracking-tight">
                               ${plan.price.toFixed(0)}
                             </span>
                           )}
