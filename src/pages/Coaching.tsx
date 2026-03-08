@@ -63,11 +63,11 @@ const Coaching = () => {
             <p className="text-xs font-medium tracking-[0.3em] uppercase text-primary mb-4">
               Executive Coaching
             </p>
-            <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mb-6 leading-[1.1]">
+            <h1 className="font-display text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mb-4 sm:mb-6 leading-[1.1]">
               Your Leadership,{" "}
               <span className="text-gradient-gold">Elevated</span>
             </h1>
-            <p className="text-muted-foreground max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
+            <p className="text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base md:text-lg leading-relaxed px-2">
               Every engagement is tailored. Choose the level of partnership that
               matches where you are—and where you want to go.
             </p>

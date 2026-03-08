@@ -13,19 +13,19 @@ const Book = () => {
   return (
     <main>
       <Navigation />
-      <section className="pt-32 pb-20 section-padding bg-background">
+      <section className="pt-24 sm:pt-32 pb-16 sm:pb-20 section-padding bg-background">
         <div className="max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-16"
+            className="text-center mb-10 sm:mb-16"
           >
-            <p className="text-xs font-medium tracking-[0.3em] uppercase text-primary mb-4">Library</p>
-            <h1 className="font-display text-4xl md:text-5xl font-semibold text-foreground mb-4">
+            <p className="text-xs font-medium tracking-[0.3em] uppercase text-primary mb-3 sm:mb-4">Library</p>
+            <h1 className="font-display text-2xl sm:text-4xl md:text-5xl font-semibold text-foreground mb-3 sm:mb-4">
               Books by <span className="text-gradient-gold">Andre' Corbin</span>
             </h1>
-            <p className="text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            <p className="text-muted-foreground max-w-2xl mx-auto leading-relaxed text-sm sm:text-base">
               Decades of leadership wisdom distilled into actionable frameworks.
             </p>
           </motion.div>
