@@ -209,8 +209,8 @@ const Coaching = () => {
                           >
                             <Check
                               size={12}
-                              className={`mt-0.5 shrink-0 ${
-                                isMiddle
+                             className={`mt-0.5 shrink-0 ${
+                                isPopular
                                   ? "text-primary"
                                   : "text-muted-foreground"
                               }`}
