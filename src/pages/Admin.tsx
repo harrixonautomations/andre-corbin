@@ -557,7 +557,7 @@ const Admin = () => {
                           <p className="text-foreground font-medium">{c.name}</p>
                           <p className="text-muted-foreground text-sm">{c.email}{c.phone ? ` · ${c.phone}` : ""}</p>
                           {c.message && <p className="text-muted-foreground text-sm mt-2">{c.message}</p>}
-                          {c.slot_date && (
+                         {c.slot_date && (
                             <p className="text-xs text-muted-foreground mt-1">
                               Booked: {new Date(c.slot_date + "T12:00:00").toLocaleDateString()}
                               {c.slot_time && ` at ${formatTime(c.slot_time)}`}
@@ -570,11 +570,41 @@ const Admin = () => {
                               {c.client_response && <span className="ml-2 text-muted-foreground">({c.client_response})</span>}
                             </p>
                           )}
+                          
+                          {/* Client reschedule request pending admin approval */}
+                          {c.status === "reschedule_pending" && c.reschedule_requested_by === "client" && (
+                            <div className="mt-3 p-3 bg-yellow-500/5 border border-yellow-500/20 rounded-md">
+                              <p className="text-yellow-400 text-xs font-medium mb-2">
+                                <CalendarClock size={12} className="inline mr-1" />
+                                {c.name} requested reschedule to: {c.reschedule_proposed_date && new Date(c.reschedule_proposed_date + "T12:00:00").toLocaleDateString()}
+                                {c.reschedule_proposed_time && ` at ${formatTime(c.reschedule_proposed_time)}`}
+                              </p>
+                              <div className="flex gap-2">
+                                <Button size="sm" onClick={() => respondToClientReschedule(c.id, true, c)} className="gap-1 text-xs">
+                                  <CheckCircle2 size={12} /> Accept
+                                </Button>
+                                <Button size="sm" variant="outline" onClick={() => respondToClientReschedule(c.id, false, c)} className="gap-1 text-xs">
+                                  <X size={12} /> Decline
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Admin's own pending reschedule */}
+                          {c.status === "reschedule_pending" && c.reschedule_requested_by === "admin" && (
+                            <div className="mt-3 p-3 bg-primary/5 border border-primary/20 rounded-md">
+                              <p className="text-primary text-xs font-medium">
+                                <CalendarClock size={12} className="inline mr-1" />
+                                Your reschedule request is pending client approval — {c.reschedule_proposed_date && new Date(c.reschedule_proposed_date + "T12:00:00").toLocaleDateString()}
+                                {c.reschedule_proposed_time && ` at ${formatTime(c.reschedule_proposed_time)}`}
+                              </p>
+                            </div>
+                          )}
                         </div>
                         <div className="flex flex-col items-end gap-2">
                           <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
                             c.status === "confirmed" || c.status === "completed" ? "bg-green-500/10 text-green-400" :
-                            c.status === "postponed" ? "bg-yellow-500/10 text-yellow-400" :
+                            c.status === "postponed" || c.status === "reschedule_pending" ? "bg-yellow-500/10 text-yellow-400" :
                             c.status === "cancelled" ? "bg-destructive/10 text-destructive" :
                             "bg-primary/10 text-primary"
                           }`}>{c.status.replace(/_/g, " ")}</span>
@@ -622,7 +652,7 @@ const Admin = () => {
                       {/* Chat */}
                       {openChatId === c.id && (
                         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4">
-                          <ConsultationChat consultationId={c.id} clientName={c.name} slotDate={c.slot_date} slotTime={c.slot_time} />
+                          <ConsultationChat consultationId={c.id} clientName={c.name} slotDate={c.slot_date} slotTime={c.slot_time} onRescheduleRequested={fetchConsultations} />
                         </motion.div>
                       )}
                     </div>
