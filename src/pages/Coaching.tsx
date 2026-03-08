@@ -15,6 +15,7 @@ interface Plan {
   duration_minutes: number;
   discount_percent: number;
   is_published: boolean;
+  is_popular: boolean;
   display_order: number;
 }
 
@@ -115,8 +116,7 @@ const Coaching = () => {
               } gap-4 lg:gap-5 items-stretch`}
             >
               {plans.map((plan, i) => {
-                const isMiddle =
-                  plans.length >= 3 && i === Math.floor(plans.length / 2);
+                const isPopular = plan.is_popular;
                 const finalPrice =
                   plan.discount_percent > 0
                     ? plan.price * (1 - plan.discount_percent / 100)
@@ -131,13 +131,13 @@ const Coaching = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: i * 0.15 }}
                     className={`relative rounded-xl flex flex-col overflow-hidden transition-all duration-300 group ${
-                      isMiddle
+                      isPopular
                         ? "bg-card border-2 border-primary glow-gold"
                         : "bg-card border border-border hover:border-primary/40"
                     }`}
                   >
                     {/* Popular badge */}
-                    {isMiddle && (
+                    {isPopular && (
                       <div className="bg-primary text-primary-foreground text-[10px] font-bold tracking-[0.2em] uppercase text-center py-2">
                         Most Popular
                       </div>
@@ -148,7 +148,7 @@ const Coaching = () => {
                       <div className="flex items-center gap-3 mb-4">
                         <div
                           className={`p-2.5 rounded-lg ${
-                            isMiddle
+                            isPopular
                               ? "bg-primary/15 text-primary"
                               : "bg-secondary text-muted-foreground group-hover:text-primary"
                           } transition-colors`}
@@ -209,8 +209,8 @@ const Coaching = () => {
                           >
                             <Check
                               size={12}
-                              className={`mt-0.5 shrink-0 ${
-                                isMiddle
+                             className={`mt-0.5 shrink-0 ${
+                                isPopular
                                   ? "text-primary"
                                   : "text-muted-foreground"
                               }`}
@@ -224,7 +224,7 @@ const Coaching = () => {
                       <Link
                         to={`/book-session?plan=${plan.id}`}
                         className={`flex items-center justify-center gap-2 px-4 py-3 font-semibold text-xs tracking-wider uppercase rounded-lg transition-all duration-300 ${
-                          isMiddle
+                          isPopular
                             ? "bg-primary text-primary-foreground hover:bg-gold-light hover:shadow-lg hover:shadow-primary/20"
                             : "border border-border text-foreground hover:border-primary hover:text-primary hover:bg-primary/5"
                         }`}

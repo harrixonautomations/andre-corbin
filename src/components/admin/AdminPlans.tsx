@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { Plus, Edit2, Trash2, Eye, EyeOff, ArrowUp, ArrowDown, X, Percent } from "lucide-react";
+import { Plus, Edit2, Trash2, Eye, EyeOff, ArrowUp, ArrowDown, X, Percent, Star } from "lucide-react";
 
 interface Plan {
   id: string;
@@ -15,6 +15,7 @@ interface Plan {
   price: number;
   duration_minutes: number;
   is_published: boolean;
+  is_popular: boolean;
   display_order: number;
   discount_percent: number;
   created_at: string;
@@ -88,6 +89,16 @@ const AdminPlans = () => {
     toast({ title: p.is_published ? "Plan unpublished" : "Plan published" });
   };
 
+  const togglePopular = async (p: Plan) => {
+    // If marking as popular, unmark all others first
+    if (!p.is_popular) {
+      await supabase.from("consultation_plans").update({ is_popular: false } as any).neq("id", p.id);
+    }
+    await supabase.from("consultation_plans").update({ is_popular: !p.is_popular } as any).eq("id", p.id);
+    fetchPlans();
+    toast({ title: p.is_popular ? "Removed popular badge" : "Marked as most popular" });
+  };
+
   const reorder = async (index: number, direction: -1 | 1) => {
     const newIndex = index + direction;
     if (newIndex < 0 || newIndex >= plans.length) return;
@@ -134,9 +145,12 @@ const AdminPlans = () => {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-foreground font-medium text-sm">{p.name}</p>
-                <p className="text-muted-foreground text-xs">${p.price} · {p.duration_minutes}min {p.discount_percent > 0 && `· ${p.discount_percent}% OFF`}</p>
+                <p className="text-muted-foreground text-xs">${p.price} · {p.duration_minutes}min {p.discount_percent > 0 && `· ${p.discount_percent}% OFF`} {p.is_popular && "⭐ Popular"}</p>
               </div>
               <div className="flex items-center gap-1">
+                <Button size="icon" variant="ghost" onClick={() => togglePopular(p)} className="h-8 w-8" title={p.is_popular ? "Remove popular" : "Mark as popular"}>
+                  <Star size={14} className={p.is_popular ? "text-primary fill-primary" : "text-muted-foreground"} />
+                </Button>
                 <Button size="icon" variant="ghost" onClick={() => togglePublish(p)} className="h-8 w-8">
                   {p.is_published ? <Eye size={14} /> : <EyeOff size={14} className="text-muted-foreground" />}
                 </Button>
