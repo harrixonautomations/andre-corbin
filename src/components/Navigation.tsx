@@ -20,6 +20,7 @@ const Navigation = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const [scrolled, setScrolled] = useState(false);
+  const { user, signOut } = useAuth();
 
   // Close menu on route change
   useEffect(() => {
