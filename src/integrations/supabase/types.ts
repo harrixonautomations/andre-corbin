@@ -148,6 +148,7 @@ export type Database = {
           display_order: number
           duration_minutes: number
           id: string
+          is_popular: boolean
           is_published: boolean
           name: string
           price: number
@@ -160,6 +161,7 @@ export type Database = {
           display_order?: number
           duration_minutes?: number
           id?: string
+          is_popular?: boolean
           is_published?: boolean
           name: string
           price?: number
@@ -172,6 +174,7 @@ export type Database = {
           display_order?: number
           duration_minutes?: number
           id?: string
+          is_popular?: boolean
           is_published?: boolean
           name?: string
           price?: number

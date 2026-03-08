@@ -1,0 +1,1 @@
+ALTER TABLE public.consultation_plans ADD COLUMN is_popular boolean NOT NULL DEFAULT false;
