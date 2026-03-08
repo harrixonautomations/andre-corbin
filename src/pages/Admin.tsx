@@ -562,6 +562,9 @@ const Admin = () => {
           {/* Discounts Tab */}
           {tab === "discounts" && <AdminDiscounts />}
 
+          {/* Samples Tab */}
+          {tab === "samples" && <AdminSamples />}
+
           {/* Admins Tab */}
           {tab === "admins" && (
             <div>
