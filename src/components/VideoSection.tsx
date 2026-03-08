@@ -58,7 +58,7 @@ const VideoSection = () => {
           {videoUrl && isEmbedUrl ? (
             playing ? (
               <iframe
-                src={`${videoUrl}?autoplay=1`}
+                src={`${embed}?autoplay=1`}
                 className="w-full h-full"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
