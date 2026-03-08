@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogIn, UserPlus, LayoutDashboard, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
 
 const navLinks = [
   { to: "/", label: "Home" },
@@ -18,6 +20,7 @@ const Navigation = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const [scrolled, setScrolled] = useState(false);
+  const { user, signOut } = useAuth();
 
   // Close menu on route change
   useEffect(() => {
@@ -60,6 +63,31 @@ const Navigation = () => {
             >
               Book a Session
             </Link>
+            {user ? (
+              <>
+                <Link to="/dashboard">
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <LayoutDashboard size={14} /> Dashboard
+                  </Button>
+                </Link>
+                <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground" onClick={signOut}>
+                  <LogOut size={14} /> Sign Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/auth">
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <LogIn size={14} /> Sign In
+                  </Button>
+                </Link>
+                <Link to="/auth?signup=true">
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <UserPlus size={14} /> Sign Up
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile/Tablet Toggle */}
@@ -105,6 +133,7 @@ const Navigation = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
+                className="space-y-3"
               >
                 <Link
                   to="/book-session"
@@ -113,6 +142,25 @@ const Navigation = () => {
                 >
                   Book a Session
                 </Link>
+                {user ? (
+                  <>
+                    <Link to="/dashboard" onClick={() => setIsOpen(false)} className="block">
+                      <Button variant="outline" className="w-full gap-2"><LayoutDashboard size={14} /> Dashboard</Button>
+                    </Link>
+                    <Button variant="ghost" className="w-full gap-2 text-muted-foreground" onClick={() => { signOut(); setIsOpen(false); }}>
+                      <LogOut size={14} /> Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/auth" onClick={() => setIsOpen(false)} className="block">
+                      <Button variant="ghost" className="w-full gap-2"><LogIn size={14} /> Sign In</Button>
+                    </Link>
+                    <Link to="/auth?signup=true" onClick={() => setIsOpen(false)} className="block">
+                      <Button variant="outline" className="w-full gap-2"><UserPlus size={14} /> Sign Up</Button>
+                    </Link>
+                  </>
+                )}
               </motion.div>
             </div>
           </SheetContent>
@@ -152,6 +200,25 @@ const Navigation = () => {
                 >
                   Book a Session
                 </Link>
+                {user ? (
+                  <>
+                    <Link to="/dashboard" onClick={() => setIsOpen(false)}>
+                      <Button variant="outline" size="sm" className="gap-2"><LayoutDashboard size={14} /> Dashboard</Button>
+                    </Link>
+                    <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground" onClick={() => { signOut(); setIsOpen(false); }}>
+                      <LogOut size={14} /> Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/auth" onClick={() => setIsOpen(false)}>
+                      <Button variant="ghost" size="sm" className="gap-2"><LogIn size={14} /> Sign In</Button>
+                    </Link>
+                    <Link to="/auth?signup=true" onClick={() => setIsOpen(false)}>
+                      <Button variant="outline" size="sm" className="gap-2"><UserPlus size={14} /> Sign Up</Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </motion.div>
           )}
