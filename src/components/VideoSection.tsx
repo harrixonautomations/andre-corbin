@@ -38,12 +38,12 @@ const VideoSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.7 }}
-          className="text-center mb-12"
+          className="text-center mb-8 sm:mb-12"
         >
-          <h2 className="font-display text-3xl md:text-5xl font-semibold text-foreground mb-4">
+          <h2 className="font-display text-2xl sm:text-3xl md:text-5xl font-semibold text-foreground mb-3 sm:mb-4">
             Watch the <span className="text-gradient-gold">Introduction</span>
           </h2>
-          <p className="text-muted-foreground max-w-xl mx-auto">
+          <p className="text-muted-foreground max-w-xl mx-auto text-sm sm:text-base px-2">
             Learn how executive coaching can transform your leadership and accelerate your company's growth.
           </p>
         </motion.div>
@@ -66,8 +66,8 @@ const VideoSection = () => {
               />
             ) : (
               <button onClick={() => setPlaying(true)} className="absolute inset-0 flex items-center justify-center group cursor-pointer">
-                <div className="w-20 h-20 rounded-full bg-primary/20 backdrop-blur-sm flex items-center justify-center group-hover:bg-primary/30 transition-colors duration-300">
-                  <Play className="w-8 h-8 text-primary ml-1" />
+                <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-full bg-primary/20 backdrop-blur-sm flex items-center justify-center group-hover:bg-primary/30 transition-colors duration-300">
+                  <Play className="w-6 h-6 sm:w-8 sm:h-8 text-primary ml-0.5 sm:ml-1" />
                 </div>
               </button>
             )
@@ -76,11 +76,11 @@ const VideoSection = () => {
           ) : (
             <>
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-20 h-20 rounded-full bg-primary/20 backdrop-blur-sm flex items-center justify-center">
-                  <Play className="w-8 h-8 text-primary ml-1" />
+                <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-full bg-primary/20 backdrop-blur-sm flex items-center justify-center">
+                  <Play className="w-6 h-6 sm:w-8 sm:h-8 text-primary ml-0.5 sm:ml-1" />
                 </div>
               </div>
-              <div className="absolute bottom-6 left-6 text-sm text-muted-foreground">
+              <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 text-xs sm:text-sm text-muted-foreground">
                 Video coming soon
               </div>
             </>

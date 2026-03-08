@@ -87,6 +87,21 @@
   }
 
   .section-padding {
-    @apply px-6 py-20 md:px-12 lg:px-24 lg:py-32;
+    @apply px-4 py-14 sm:px-6 sm:py-20 md:px-12 lg:px-24 lg:py-32;
   }
+
+  /* Hide scrollbar for mobile tab scrolling */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Extra small breakpoint helper */
+@media (min-width: 480px) {
+  .xs\:inline { display: inline; }
+  .xs\:hidden { display: none; }
 }

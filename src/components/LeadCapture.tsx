@@ -55,11 +55,11 @@ const LeadCapture = () => {
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.7 }}
         >
-          <p className="text-xs font-medium tracking-[0.3em] uppercase text-primary mb-4">Free Chapter</p>
-          <h2 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4">
+          <p className="text-xs font-medium tracking-[0.3em] uppercase text-primary mb-3 sm:mb-4">Free Chapter</p>
+          <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-semibold text-foreground mb-3 sm:mb-4">
             Get a Free Chapter
           </h2>
-          <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+          <p className="text-muted-foreground mb-6 sm:mb-8 max-w-md mx-auto text-sm sm:text-base px-2">
             Enter your email to receive the first chapter of the book—and exclusive leadership insights every week.
           </p>
 
@@ -67,17 +67,17 @@ const LeadCapture = () => {
             <motion.p
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="text-primary font-medium text-lg"
+              className="text-primary font-medium text-base sm:text-lg"
             >
               ✓ Check your inbox — the chapter is on its way.
             </motion.p>
           ) : (
-            <form onSubmit={handleSubmit} className="flex flex-col gap-3 max-w-md mx-auto">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-3 max-w-md mx-auto px-2 sm:px-0">
               {books.length > 1 && (
                 <select
                   value={selectedBook}
                   onChange={(e) => setSelectedBook(e.target.value)}
-                  className="px-5 py-3.5 bg-background border border-border rounded-sm text-foreground text-sm focus:outline-none focus:border-primary transition-colors"
+                  className="px-4 sm:px-5 py-3 sm:py-3.5 bg-background border border-border rounded-sm text-foreground text-sm focus:outline-none focus:border-primary transition-colors"
                 >
                   {books.map(b => (
                     <option key={b.id} value={b.id}>{b.title}</option>
@@ -92,12 +92,12 @@ const LeadCapture = () => {
                   placeholder="Your email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="flex-1 px-5 py-3.5 bg-background border border-border rounded-sm text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:border-primary transition-colors"
+                  className="flex-1 px-4 sm:px-5 py-3 sm:py-3.5 bg-background border border-border rounded-sm text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:border-primary transition-colors"
                 />
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-6 py-3.5 bg-primary text-primary-foreground font-medium text-sm tracking-wider uppercase rounded-sm hover:bg-gold-light transition-colors duration-300 flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="px-5 sm:px-6 py-3 sm:py-3.5 bg-primary text-primary-foreground font-medium text-sm tracking-wider uppercase rounded-sm hover:bg-gold-light transition-colors duration-300 flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {submitting ? "Sending..." : "Send"} <ArrowRight size={16} />
                 </button>

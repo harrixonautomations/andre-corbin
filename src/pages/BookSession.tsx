@@ -109,11 +109,11 @@ const BookSession = () => {
   return (
     <main>
       <Navigation />
-      <section className="pt-32 pb-20 section-padding bg-background min-h-screen">
+      <section className="pt-24 sm:pt-32 pb-16 sm:pb-20 section-padding bg-background min-h-screen">
         <div className="max-w-2xl mx-auto">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
-            <p className="text-xs font-medium tracking-[0.3em] uppercase text-primary mb-4">Book a Session</p>
-            <h1 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-3">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8 sm:mb-10">
+            <p className="text-xs font-medium tracking-[0.3em] uppercase text-primary mb-3 sm:mb-4">Book a Session</p>
+            <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-semibold text-foreground mb-3">
               Schedule Your <span className="text-gradient-gold">Consultation</span>
             </h1>
             {selectedPlan && (
@@ -126,16 +126,16 @@ const BookSession = () => {
             )}
           </motion.div>
 
-          {/* Progress steps — now 3 steps */}
-          <div className="flex items-center justify-center gap-2 mb-10">
+          {/* Progress steps */}
+          <div className="flex items-center justify-center gap-1.5 sm:gap-2 mb-8 sm:mb-10">
             {[1, 2, 3].map((s) => (
-              <div key={s} className="flex items-center gap-2">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all ${
+              <div key={s} className="flex items-center gap-1.5 sm:gap-2">
+                <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-semibold transition-all ${
                   step >= s ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
                 }`}>
-                  {step > s ? <Check size={14} /> : s}
+                  {step > s ? <Check size={12} /> : s}
                 </div>
-                {s < 3 && <div className={`w-8 h-0.5 ${step > s ? "bg-primary" : "bg-border"}`} />}
+                {s < 3 && <div className={`w-6 sm:w-8 h-0.5 ${step > s ? "bg-primary" : "bg-border"}`} />}
               </div>
             ))}
           </div>

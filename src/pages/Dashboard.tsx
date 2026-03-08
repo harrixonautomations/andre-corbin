@@ -131,7 +131,6 @@ const Dashboard = () => {
 
   const respondToReschedule = async (id: string, accept: boolean, c: ConsultationRow) => {
     if (accept) {
-      // Accept: update slot_date/slot_time to proposed values, reset reschedule fields
       const newDate = c.reschedule_proposed_date;
       const newTime = c.reschedule_proposed_time;
       await supabase.from("consultations").update({
@@ -146,7 +145,6 @@ const Dashboard = () => {
         postponed_time: null,
       }).eq("id", id);
 
-      // Log
       if (user) {
         await supabase.from("consultation_logs").insert({
           consultation_id: id,
@@ -157,7 +155,6 @@ const Dashboard = () => {
       }
       toast({ title: "Reschedule accepted", description: "The session has been updated." });
     } else {
-      // Decline: revert to scheduled status
       await supabase.from("consultations").update({
         status: "scheduled",
         client_response: "rejected",
@@ -179,7 +176,6 @@ const Dashboard = () => {
     fetchConsultations();
   };
 
-  // Legacy postpone handler (for old postponed status from admin)
   const respondToPostpone = async (id: string, accept: boolean) => {
     const update = accept
       ? { status: "confirmed", client_response: "accepted" }
@@ -194,45 +190,47 @@ const Dashboard = () => {
   return (
     <main>
       <Navigation />
-      <section className="pt-32 pb-20 section-padding bg-background min-h-screen">
+      <section className="pt-24 sm:pt-32 pb-16 sm:pb-20 section-padding bg-background min-h-screen">
         <div className="max-w-5xl mx-auto">
-          <div className="flex items-center justify-between mb-10">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 sm:mb-10">
             <div>
-              <h1 className="font-display text-3xl font-semibold text-foreground">My Dashboard</h1>
-              <p className="text-muted-foreground text-sm mt-1">Track your orders and bookings</p>
+              <h1 className="font-display text-2xl sm:text-3xl font-semibold text-foreground">My Dashboard</h1>
+              <p className="text-muted-foreground text-xs sm:text-sm mt-1">Track your orders and bookings</p>
             </div>
-            <Button onClick={signOut} variant="outline" size="sm" className="gap-2"><LogOut size={14} />Sign Out</Button>
+            <Button onClick={signOut} variant="outline" size="sm" className="gap-2 w-fit"><LogOut size={14} />Sign Out</Button>
           </div>
 
-          <div className="flex gap-1 mb-8 bg-secondary rounded-lg p-1 w-fit">
-            <button onClick={() => setTab("orders")} className={`px-5 py-2.5 rounded-md text-sm font-medium transition-colors ${tab === "orders" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-              <Package size={14} className="inline mr-2" />My Orders
+          {/* Tabs */}
+          <div className="flex gap-1 mb-6 sm:mb-8 bg-secondary rounded-lg p-1 w-full sm:w-fit overflow-x-auto">
+            <button onClick={() => setTab("orders")} className={`flex-1 sm:flex-none px-4 sm:px-5 py-2.5 rounded-md text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${tab === "orders" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+              <Package size={14} className="inline mr-1.5 sm:mr-2" />My Orders
             </button>
-            <button onClick={() => setTab("bookings")} className={`px-5 py-2.5 rounded-md text-sm font-medium transition-colors ${tab === "bookings" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-              <Calendar size={14} className="inline mr-2" />My Bookings
+            <button onClick={() => setTab("bookings")} className={`flex-1 sm:flex-none px-4 sm:px-5 py-2.5 rounded-md text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${tab === "bookings" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+              <Calendar size={14} className="inline mr-1.5 sm:mr-2" />My Bookings
             </button>
           </div>
 
           {tab === "orders" && (
             <div>
               {orders.length === 0 ? (
-                <div className="text-center py-16">
-                  <BookOpen size={40} className="mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground mb-4">No orders yet.</p>
+                <div className="text-center py-12 sm:py-16">
+                  <BookOpen size={36} className="mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground mb-4 text-sm">No orders yet.</p>
                   <Link to="/book" className="text-primary hover:underline text-sm">Browse books →</Link>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {orders.map((order) => (
-                    <motion.div key={order.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border rounded-lg p-5">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-foreground font-medium text-sm">{order.book_title}</p>
+                    <motion.div key={order.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border rounded-lg p-4 sm:p-5">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
+                        <div className="min-w-0">
+                          <p className="text-foreground font-medium text-sm truncate">{order.book_title}</p>
                           <p className="text-muted-foreground text-xs mt-1">
                             {new Date(order.created_at).toLocaleDateString()} · ${Number(order.total).toFixed(2)}
                           </p>
                         </div>
-                        <span className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-medium ${statusColor(order.status)}`}>
+                        <span className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-medium w-fit ${statusColor(order.status)}`}>
                           {statusIcon(order.status)}
                           {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                         </span>
@@ -247,9 +245,9 @@ const Dashboard = () => {
           {tab === "bookings" && (
             <div>
               {consultations.length === 0 ? (
-                <div className="text-center py-16">
-                  <Calendar size={40} className="mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground mb-4">No bookings yet.</p>
+                <div className="text-center py-12 sm:py-16">
+                  <Calendar size={36} className="mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground mb-4 text-sm">No bookings yet.</p>
                   <Link to="/coaching" className="text-primary hover:underline text-sm">Book a session →</Link>
                 </div>
               ) : (
@@ -259,14 +257,12 @@ const Dashboard = () => {
                     const displayTime = c.status === "postponed" && c.postponed_time ? c.postponed_time : c.slot_time;
                     const showCountdown = ["scheduled", "confirmed"].includes(c.status) && displayDate;
                     const needsOldPostponeResponse = c.status === "postponed" && c.client_response !== "accepted" && c.client_response !== "rejected";
-                    
-                    // New reschedule system: admin requested reschedule, client needs to respond
                     const needsRescheduleResponse = c.status === "reschedule_pending" && c.reschedule_requested_by === "admin" && c.client_response !== "accepted" && c.client_response !== "rejected";
 
                     return (
-                      <motion.div key={c.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border rounded-lg p-5">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1">
+                      <motion.div key={c.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border rounded-lg p-4 sm:p-5">
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
+                          <div className="flex-1 min-w-0">
                             <p className="text-foreground font-medium text-sm">{c.name}</p>
                             <p className="text-muted-foreground text-xs mt-1">
                               {new Date(c.created_at).toLocaleDateString()}
@@ -275,7 +271,6 @@ const Dashboard = () => {
                             </p>
                             {c.message && <p className="text-muted-foreground text-xs mt-1 line-clamp-1">{c.message}</p>}
 
-                            {/* Countdown */}
                             {showCountdown && displayDate && (
                               <div className="mt-3">
                                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Session in</p>
@@ -283,7 +278,6 @@ const Dashboard = () => {
                               </div>
                             )}
 
-                            {/* Legacy postpone response */}
                             {needsOldPostponeResponse && (
                               <div className="mt-3 p-3 bg-yellow-500/5 border border-yellow-500/20 rounded-md">
                                 <p className="text-yellow-400 text-xs font-medium mb-2">
@@ -291,17 +285,16 @@ const Dashboard = () => {
                                   {c.postponed_time && ` at ${formatTime(c.postponed_time)}`}
                                 </p>
                                 <div className="flex gap-2">
-                                  <Button size="sm" onClick={() => respondToPostpone(c.id, true)} className="gap-1 text-xs">
+                                  <Button size="sm" onClick={() => respondToPostpone(c.id, true)} className="gap-1 text-xs h-7 sm:h-8">
                                     <Check size={12} /> Accept
                                   </Button>
-                                  <Button size="sm" variant="outline" onClick={() => respondToPostpone(c.id, false)} className="gap-1 text-xs">
+                                  <Button size="sm" variant="outline" onClick={() => respondToPostpone(c.id, false)} className="gap-1 text-xs h-7 sm:h-8">
                                     <X size={12} /> Decline
                                   </Button>
                                 </div>
                               </div>
                             )}
 
-                            {/* New reschedule response (admin requested) */}
                             {needsRescheduleResponse && (
                               <div className="mt-3 p-3 bg-yellow-500/5 border border-yellow-500/20 rounded-md">
                                 <p className="text-yellow-400 text-xs font-medium mb-2">
@@ -310,38 +303,38 @@ const Dashboard = () => {
                                   {c.reschedule_proposed_time && ` at ${formatTime(c.reschedule_proposed_time)}`}
                                 </p>
                                 <div className="flex gap-2">
-                                  <Button size="sm" onClick={() => respondToReschedule(c.id, true, c)} className="gap-1 text-xs">
+                                  <Button size="sm" onClick={() => respondToReschedule(c.id, true, c)} className="gap-1 text-xs h-7 sm:h-8">
                                     <Check size={12} /> Accept
                                   </Button>
-                                  <Button size="sm" variant="outline" onClick={() => respondToReschedule(c.id, false, c)} className="gap-1 text-xs">
+                                  <Button size="sm" variant="outline" onClick={() => respondToReschedule(c.id, false, c)} className="gap-1 text-xs h-7 sm:h-8">
                                     <X size={12} /> Decline
                                   </Button>
                                 </div>
                               </div>
                             )}
 
-                            {/* Client's own pending reschedule request */}
                             {c.status === "reschedule_pending" && c.reschedule_requested_by === "client" && (
                               <div className="mt-3 p-3 bg-primary/5 border border-primary/20 rounded-md">
                                 <p className="text-primary text-xs font-medium">
                                   <CalendarClock size={12} className="inline mr-1" />
-                                  Your reschedule request is pending approval — proposed: {c.reschedule_proposed_date && new Date(c.reschedule_proposed_date + "T12:00:00").toLocaleDateString()}
+                                  Your reschedule request is pending — proposed: {c.reschedule_proposed_date && new Date(c.reschedule_proposed_date + "T12:00:00").toLocaleDateString()}
                                   {c.reschedule_proposed_time && ` at ${formatTime(c.reschedule_proposed_time)}`}
                                 </p>
                               </div>
                             )}
                           </div>
 
-                          <div className="flex flex-col items-end gap-2">
-                            <span className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-medium ${statusColor(c.status)}`}>
+                          <div className="flex sm:flex-col items-center sm:items-end gap-2">
+                            <span className={`inline-flex items-center gap-1.5 text-[10px] sm:text-xs px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full font-medium ${statusColor(c.status)}`}>
                               {statusIcon(c.status)}
-                              {c.status.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
+                              <span className="hidden xs:inline">{c.status.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}</span>
+                              <span className="xs:hidden">{c.status.split("_")[0]}</span>
                             </span>
                             <Button
                               size="sm"
                               variant="ghost"
                               onClick={() => setOpenChatId(openChatId === c.id ? null : c.id)}
-                              className="gap-1 text-xs"
+                              className="gap-1 text-xs h-7 sm:h-8"
                             >
                               <MessageCircle size={13} />
                               Chat
@@ -349,7 +342,6 @@ const Dashboard = () => {
                           </div>
                         </div>
 
-                        {/* Chat */}
                         {openChatId === c.id && (
                           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4">
                             <ConsultationChat 

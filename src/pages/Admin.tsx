@@ -381,23 +381,25 @@ const Admin = () => {
   return (
     <main>
       <Navigation />
-      <section className="pt-32 pb-20 section-padding bg-background min-h-screen">
+      <section className="pt-24 sm:pt-32 pb-16 sm:pb-20 section-padding bg-background min-h-screen">
         <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-10">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 sm:mb-10">
             <div>
-              <h1 className="font-display text-3xl font-semibold text-foreground">Admin Cockpit</h1>
-              <p className="text-muted-foreground text-sm mt-1">Andre' Corbin — Site Management</p>
+              <h1 className="font-display text-2xl sm:text-3xl font-semibold text-foreground">Admin Cockpit</h1>
+              <p className="text-muted-foreground text-xs sm:text-sm mt-1">Andre' Corbin — Site Management</p>
             </div>
-            <Button onClick={signOut} variant="outline" size="sm" className="gap-2"><LogOut size={14} />Sign Out</Button>
+            <Button onClick={signOut} variant="outline" size="sm" className="gap-2 w-fit"><LogOut size={14} />Sign Out</Button>
           </div>
 
-          {/* Tabs */}
-          <div className="flex gap-1 mb-8 bg-secondary rounded-lg p-1 w-fit flex-wrap">
-            {tabs.map(t => (
-              <button key={t.key} onClick={() => setTab(t.key)} className={`px-3 py-2.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 ${tab === t.key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-                <t.icon size={13} />{t.label}
-              </button>
-            ))}
+          {/* Tabs - horizontally scrollable on mobile */}
+          <div className="mb-6 sm:mb-8 -mx-4 sm:mx-0 px-4 sm:px-0 overflow-x-auto scrollbar-hide">
+            <div className="flex gap-1 bg-secondary rounded-lg p-1 w-max sm:w-fit sm:flex-wrap">
+              {tabs.map(t => (
+                <button key={t.key} onClick={() => setTab(t.key)} className={`px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-md text-[10px] sm:text-xs font-medium transition-colors flex items-center gap-1 sm:gap-1.5 whitespace-nowrap ${tab === t.key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+                  <t.icon size={12} />{t.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Overview */}

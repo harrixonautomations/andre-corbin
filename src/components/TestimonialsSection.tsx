@@ -31,15 +31,15 @@ const TestimonialsSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.7 }}
-          className="text-center mb-16"
+          className="text-center mb-10 sm:mb-16"
         >
           <p className="text-xs font-medium tracking-[0.3em] uppercase text-primary mb-4">Testimonials</p>
-          <h2 className="font-display text-3xl md:text-5xl font-semibold text-foreground">
+          <h2 className="font-display text-2xl sm:text-3xl md:text-5xl font-semibold text-foreground">
             What Leaders <span className="text-gradient-gold">Say</span>
           </h2>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {testimonials.map((t, i) => (
             <motion.div
               key={t.id}
@@ -47,10 +47,10 @@ const TestimonialsSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, delay: i * 0.1 }}
-              className="bg-card border border-border rounded-lg p-8 relative"
+              className="bg-card border border-border rounded-lg p-5 sm:p-8 relative"
             >
-              <Quote className="w-8 h-8 text-primary/30 mb-4" />
-              <p className="text-secondary-foreground text-sm leading-relaxed mb-6">
+              <Quote className="w-6 h-6 sm:w-8 sm:h-8 text-primary/30 mb-3 sm:mb-4" />
+              <p className="text-secondary-foreground text-xs sm:text-sm leading-relaxed mb-4 sm:mb-6">
                 "{t.quote}"
               </p>
               <div>

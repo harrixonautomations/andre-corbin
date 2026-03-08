@@ -5,16 +5,16 @@ import { motion } from "framer-motion";
 const About = () => (
   <main>
     <Navigation />
-    <section className="pt-32 pb-20 section-padding bg-background">
+    <section className="pt-24 sm:pt-32 pb-16 sm:pb-20 section-padding bg-background">
       <div className="max-w-4xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
         >
-          <p className="text-xs font-medium tracking-[0.3em] uppercase text-primary mb-4">About</p>
-          <h1 className="font-display text-4xl md:text-6xl font-bold text-foreground mb-8">
-            The Coach Behind <br />
+          <p className="text-xs font-medium tracking-[0.3em] uppercase text-primary mb-3 sm:mb-4">About</p>
+          <h1 className="font-display text-3xl sm:text-4xl md:text-6xl font-bold text-foreground mb-6 sm:mb-8">
+            The Coach Behind <br className="hidden sm:block" />
             <span className="text-gradient-gold">the Transformation</span>
           </h1>
         </motion.div>
@@ -23,7 +23,7 @@ const About = () => (
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.2 }}
-          className="space-y-6 text-muted-foreground leading-relaxed text-base md:text-lg"
+          className="space-y-5 sm:space-y-6 text-muted-foreground leading-relaxed text-sm sm:text-base md:text-lg"
         >
           <p>
             Andre Corbin is an executive coach who has spent over a decade working with 
@@ -43,15 +43,15 @@ const About = () => (
             that makes him equally effective in a boardroom or a one-on-one session.
           </p>
 
-          <div className="pt-8 grid grid-cols-1 sm:grid-cols-3 gap-8">
+          <div className="pt-6 sm:pt-8 grid grid-cols-3 gap-4 sm:gap-8">
             {[
               { stat: "200+", label: "Leaders Coached" },
               { stat: "15+", label: "Years Experience" },
-              { stat: "$2B+", label: "Client Revenue Impacted" },
+              { stat: "$2B+", label: "Revenue Impacted" },
             ].map((item, i) => (
               <div key={i} className="text-center">
-                <p className="font-display text-4xl font-bold text-primary mb-2">{item.stat}</p>
-                <p className="text-muted-foreground text-sm">{item.label}</p>
+                <p className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-1 sm:mb-2">{item.stat}</p>
+                <p className="text-muted-foreground text-[10px] sm:text-xs md:text-sm">{item.label}</p>
               </div>
             ))}
           </div>
