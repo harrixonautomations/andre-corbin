@@ -98,9 +98,24 @@ const Dashboard = () => {
 
       const { data: consultData } = await supabase
         .from("consultations")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (consultData) setConsultations(consultData as ConsultationRow[]);
+        .select("*");
+      if (consultData) {
+        const now = new Date();
+        const sorted = (consultData as ConsultationRow[]).sort((a, b) => {
+          const dateA = a.slot_date ? new Date(`${a.slot_date}T${a.slot_time || "00:00"}`) : null;
+          const dateB = b.slot_date ? new Date(`${b.slot_date}T${b.slot_time || "00:00"}`) : null;
+          if (!dateA && !dateB) return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+          if (!dateA) return 1;
+          if (!dateB) return -1;
+          const diffA = dateA.getTime() - now.getTime();
+          const diffB = dateB.getTime() - now.getTime();
+          if (diffA >= 0 && diffB >= 0) return diffA - diffB;
+          if (diffA >= 0) return -1;
+          if (diffB >= 0) return 1;
+          return diffB - diffA;
+        });
+        setConsultations(sorted);
+      }
     };
     fetchData();
   }, [user]);
