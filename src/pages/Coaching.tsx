@@ -155,7 +155,7 @@ const Coaching = () => {
                         >
                           <Icon size={20} />
                         </div>
-                        <h3 className="font-display text-xl font-bold text-foreground">
+                        <h3 className="font-display text-base font-bold text-foreground leading-tight">
                           {plan.name}
                         </h3>
                       </div>
