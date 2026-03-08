@@ -104,11 +104,15 @@ const Coaching = () => {
             <div
               className={`grid grid-cols-1 ${
                 plans.length === 1
-                  ? "max-w-md mx-auto"
+                  ? "max-w-sm mx-auto"
                   : plans.length === 2
-                  ? "md:grid-cols-2 max-w-4xl mx-auto"
-                  : "md:grid-cols-3"
-              } gap-6 lg:gap-8 items-stretch`}
+                  ? "sm:grid-cols-2 max-w-3xl mx-auto"
+                  : plans.length <= 3
+                  ? "sm:grid-cols-2 lg:grid-cols-3"
+                  : plans.length === 4
+                  ? "sm:grid-cols-2 lg:grid-cols-4"
+                  : "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"
+              } gap-4 lg:gap-5 items-stretch`}
             >
               {plans.map((plan, i) => {
                 const isMiddle =
@@ -128,7 +132,7 @@ const Coaching = () => {
                     transition={{ duration: 0.6, delay: i * 0.15 }}
                     className={`relative rounded-xl flex flex-col overflow-hidden transition-all duration-300 group ${
                       isMiddle
-                        ? "bg-card border-2 border-primary glow-gold scale-[1.02] md:scale-105"
+                        ? "bg-card border-2 border-primary glow-gold"
                         : "bg-card border border-border hover:border-primary/40"
                     }`}
                   >
@@ -139,7 +143,7 @@ const Coaching = () => {
                       </div>
                     )}
 
-                    <div className="p-8 flex flex-col flex-1">
+                    <div className="p-5 flex flex-col flex-1">
                       {/* Icon + Title */}
                       <div className="flex items-center gap-3 mb-4">
                         <div
@@ -151,29 +155,29 @@ const Coaching = () => {
                         >
                           <Icon size={20} />
                         </div>
-                        <h3 className="font-display text-xl font-bold text-foreground">
+                        <h3 className="font-display text-base font-bold text-foreground leading-tight">
                           {plan.name}
                         </h3>
                       </div>
 
-                      <p className="text-muted-foreground text-sm leading-relaxed mb-6">
+                      <p className="text-muted-foreground text-xs leading-relaxed mb-4 line-clamp-3">
                         {plan.description}
                       </p>
 
                       {/* Price block */}
-                      <div className="mb-6">
-                        <div className="flex items-baseline gap-2">
+                      <div className="mb-4">
+                        <div className="flex items-baseline gap-1.5">
                           {plan.discount_percent > 0 ? (
                             <>
-                              <span className="text-muted-foreground line-through text-base">
+                              <span className="text-muted-foreground line-through text-xs">
                                 ${plan.price.toFixed(0)}
                               </span>
-                              <span className="text-foreground font-bold text-4xl tracking-tight">
+                              <span className="text-foreground font-bold text-2xl tracking-tight">
                                 ${finalPrice.toFixed(0)}
                               </span>
                             </>
                           ) : (
-                            <span className="text-foreground font-bold text-4xl tracking-tight">
+                            <span className="text-foreground font-bold text-2xl tracking-tight">
                               ${plan.price.toFixed(0)}
                             </span>
                           )}
@@ -191,20 +195,20 @@ const Coaching = () => {
                       </div>
 
                       {/* Duration */}
-                      <div className="flex items-center gap-2 text-muted-foreground text-sm mb-6 pb-6 border-b border-border">
-                        <Clock size={14} className="text-primary/70" />
-                        {plan.duration_minutes} minute session
+                      <div className="flex items-center gap-1.5 text-muted-foreground text-xs mb-4 pb-4 border-b border-border">
+                        <Clock size={12} className="text-primary/70" />
+                        {plan.duration_minutes} min session
                       </div>
 
                       {/* Features */}
-                      <ul className="space-y-3 mb-8 flex-1">
+                      <ul className="space-y-2 mb-6 flex-1">
                         {features.map((feat, fi) => (
                           <li
                             key={fi}
-                            className="flex items-start gap-2.5 text-sm"
+                            className="flex items-start gap-2 text-xs"
                           >
                             <Check
-                              size={14}
+                              size={12}
                               className={`mt-0.5 shrink-0 ${
                                 isMiddle
                                   ? "text-primary"
@@ -219,13 +223,13 @@ const Coaching = () => {
                       {/* CTA */}
                       <Link
                         to={`/book-session?plan=${plan.id}`}
-                        className={`flex items-center justify-center gap-2 px-6 py-4 font-semibold text-sm tracking-wider uppercase rounded-lg transition-all duration-300 ${
+                        className={`flex items-center justify-center gap-2 px-4 py-3 font-semibold text-xs tracking-wider uppercase rounded-lg transition-all duration-300 ${
                           isMiddle
                             ? "bg-primary text-primary-foreground hover:bg-gold-light hover:shadow-lg hover:shadow-primary/20"
                             : "border border-border text-foreground hover:border-primary hover:text-primary hover:bg-primary/5"
                         }`}
                       >
-                        Get Started <ArrowRight size={16} />
+                        Get Started <ArrowRight size={14} />
                       </Link>
                     </div>
                   </motion.div>
