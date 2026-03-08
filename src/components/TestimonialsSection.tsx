@@ -17,7 +17,7 @@ const TestimonialsSection = () => {
 
   useEffect(() => {
     supabase.from("testimonials").select("*").order("display_order").then(({ data }) => {
-      if (data) setTestimonials(data);
+      if (data) setTestimonials(data as Testimonial[]);
     });
   }, []);
 
