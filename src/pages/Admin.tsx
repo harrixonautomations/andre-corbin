@@ -103,8 +103,26 @@ const Admin = () => {
   };
 
   const fetchConsultations = async () => {
-    const { data } = await supabase.from("consultations").select("*").order("created_at", { ascending: false });
-    if (data) setConsultations(data as ConsultationRow[]);
+    const { data } = await supabase.from("consultations").select("*");
+    if (data) {
+      const now = new Date();
+      const sorted = (data as ConsultationRow[]).sort((a, b) => {
+        const dateA = a.slot_date ? new Date(`${a.slot_date}T${a.slot_time || "00:00"}`) : null;
+        const dateB = b.slot_date ? new Date(`${b.slot_date}T${b.slot_time || "00:00"}`) : null;
+        // Upcoming sessions first (closest to now), then ones without dates last
+        if (!dateA && !dateB) return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        if (!dateA) return 1;
+        if (!dateB) return -1;
+        const diffA = dateA.getTime() - now.getTime();
+        const diffB = dateB.getTime() - now.getTime();
+        // Future sessions sorted soonest-first, past sessions pushed after
+        if (diffA >= 0 && diffB >= 0) return diffA - diffB;
+        if (diffA >= 0) return -1;
+        if (diffB >= 0) return 1;
+        return diffB - diffA; // past sessions: most recent first
+      });
+      setConsultations(sorted);
+    }
   };
 
   const fetchOrders = async () => {
