@@ -126,16 +126,16 @@ const BookSession = () => {
             )}
           </motion.div>
 
-          {/* Progress steps — now 3 steps */}
-          <div className="flex items-center justify-center gap-2 mb-10">
+          {/* Progress steps */}
+          <div className="flex items-center justify-center gap-1.5 sm:gap-2 mb-8 sm:mb-10">
             {[1, 2, 3].map((s) => (
-              <div key={s} className="flex items-center gap-2">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all ${
+              <div key={s} className="flex items-center gap-1.5 sm:gap-2">
+                <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-semibold transition-all ${
                   step >= s ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
                 }`}>
-                  {step > s ? <Check size={14} /> : s}
+                  {step > s ? <Check size={12} /> : s}
                 </div>
-                {s < 3 && <div className={`w-8 h-0.5 ${step > s ? "bg-primary" : "bg-border"}`} />}
+                {s < 3 && <div className={`w-6 sm:w-8 h-0.5 ${step > s ? "bg-primary" : "bg-border"}`} />}
               </div>
             ))}
           </div>
