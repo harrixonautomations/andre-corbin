@@ -201,14 +201,14 @@ const Coaching = () => {
                       </div>
 
                       {/* Features */}
-                      <ul className="space-y-2 mb-6 flex-1">
+                      <ul className="space-y-1.5 mb-3 flex-1">
                         {features.map((feat, fi) => (
                           <li
                             key={fi}
-                            className="flex items-start gap-2 text-xs"
+                            className="flex items-start gap-1.5 text-[11px]"
                           >
                             <Check
-                              size={12}
+                              size={10}
                              className={`mt-0.5 shrink-0 ${
                                 isPopular
                                   ? "text-primary"
