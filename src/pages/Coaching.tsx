@@ -223,13 +223,13 @@ const Coaching = () => {
                       {/* CTA */}
                       <Link
                         to={`/book-session?plan=${plan.id}`}
-                        className={`flex items-center justify-center gap-2 px-4 py-3 font-semibold text-xs tracking-wider uppercase rounded-lg transition-all duration-300 ${
+                        className={`flex items-center justify-center gap-1.5 px-3 py-2 font-semibold text-[10px] tracking-wider uppercase rounded-md transition-all duration-300 ${
                           isPopular
                             ? "bg-primary text-primary-foreground hover:bg-gold-light hover:shadow-lg hover:shadow-primary/20"
                             : "border border-border text-foreground hover:border-primary hover:text-primary hover:bg-primary/5"
                         }`}
                       >
-                        Get Started <ArrowRight size={14} />
+                        Get Started <ArrowRight size={12} />
                       </Link>
                     </div>
                   </motion.div>
