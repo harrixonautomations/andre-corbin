@@ -58,6 +58,7 @@ export type Database = {
           manuscript_url: string | null
           page_count: number
           price: number
+          sample_chapter_url: string | null
           subtitle: string
           title: string
           updated_at: string
@@ -75,6 +76,7 @@ export type Database = {
           manuscript_url?: string | null
           page_count?: number
           price?: number
+          sample_chapter_url?: string | null
           subtitle?: string
           title: string
           updated_at?: string
@@ -92,6 +94,7 @@ export type Database = {
           manuscript_url?: string | null
           page_count?: number
           price?: number
+          sample_chapter_url?: string | null
           subtitle?: string
           title?: string
           updated_at?: string
@@ -361,6 +364,38 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "reviews_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sample_requests: {
+        Row: {
+          book_id: string | null
+          created_at: string
+          email: string
+          id: string
+          status: string
+        }
+        Insert: {
+          book_id?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          status?: string
+        }
+        Update: {
+          book_id?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sample_requests_book_id_fkey"
             columns: ["book_id"]
             isOneToOne: false
             referencedRelation: "books"
