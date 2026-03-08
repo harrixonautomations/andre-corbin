@@ -109,11 +109,11 @@ const BookSession = () => {
   return (
     <main>
       <Navigation />
-      <section className="pt-32 pb-20 section-padding bg-background min-h-screen">
+      <section className="pt-24 sm:pt-32 pb-16 sm:pb-20 section-padding bg-background min-h-screen">
         <div className="max-w-2xl mx-auto">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
-            <p className="text-xs font-medium tracking-[0.3em] uppercase text-primary mb-4">Book a Session</p>
-            <h1 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-3">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8 sm:mb-10">
+            <p className="text-xs font-medium tracking-[0.3em] uppercase text-primary mb-3 sm:mb-4">Book a Session</p>
+            <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-semibold text-foreground mb-3">
               Schedule Your <span className="text-gradient-gold">Consultation</span>
             </h1>
             {selectedPlan && (
