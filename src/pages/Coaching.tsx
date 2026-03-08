@@ -165,30 +165,30 @@ const Coaching = () => {
                       </p>
 
                       {/* Price block */}
-                      <div className="mb-4">
-                        <div className="flex items-baseline gap-1.5">
+                      <div className="mb-2.5">
+                        <div className="flex items-baseline gap-1">
                           {plan.discount_percent > 0 ? (
                             <>
-                              <span className="text-muted-foreground line-through text-xs">
+                              <span className="text-muted-foreground line-through text-[10px]">
                                 ${plan.price.toFixed(0)}
                               </span>
-                              <span className="text-foreground font-bold text-2xl tracking-tight">
+                              <span className="text-foreground font-bold text-lg tracking-tight">
                                 ${finalPrice.toFixed(0)}
                               </span>
                             </>
                           ) : (
-                            <span className="text-foreground font-bold text-2xl tracking-tight">
+                            <span className="text-foreground font-bold text-lg tracking-tight">
                               ${plan.price.toFixed(0)}
                             </span>
                           )}
-                          <span className="text-muted-foreground text-sm">
+                          <span className="text-muted-foreground text-[10px]">
                             / session
                           </span>
                         </div>
 
                         {plan.discount_percent > 0 && (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold tracking-wider uppercase text-primary mt-2 px-2.5 py-1 bg-primary/10 rounded-full">
-                            <Percent size={10} />
+                          <span className="inline-flex items-center gap-0.5 text-[9px] font-bold tracking-wider uppercase text-primary mt-1 px-2 py-0.5 bg-primary/10 rounded-full">
+                            <Percent size={8} />
                             Save {plan.discount_percent}%
                           </span>
                         )}
