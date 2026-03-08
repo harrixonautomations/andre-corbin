@@ -17,6 +17,7 @@ import AdminPlans from "@/components/admin/AdminPlans";
 import AdminDiscounts from "@/components/admin/AdminDiscounts";
 import AdminVideo from "@/components/admin/AdminVideo";
 import AdminTestimonials from "@/components/admin/AdminTestimonials";
+import AdminMeeting from "@/components/admin/AdminMeeting";
 import {
   BookOpen, Plus, Trash2, Edit2, Calendar, LogOut, X, Upload,
   DollarSign, ShoppingCart, Users, Package, Truck, Clock, CheckCircle2,
