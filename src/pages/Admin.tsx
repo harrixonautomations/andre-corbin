@@ -692,6 +692,9 @@ const Admin = () => {
           {/* Contact Info Tab */}
           {tab === "contact" && <AdminContactInfo />}
 
+          {/* Social Links Tab */}
+          {tab === "social" && <AdminSocialLinks />}
+
           {/* Admins Tab */}
           {tab === "admins" && (
             <div>
