@@ -16,10 +16,11 @@ import AdminSamples from "@/components/admin/AdminSamples";
 import AdminPlans from "@/components/admin/AdminPlans";
 import AdminDiscounts from "@/components/admin/AdminDiscounts";
 import AdminVideo from "@/components/admin/AdminVideo";
+import AdminTestimonials from "@/components/admin/AdminTestimonials";
 import {
   BookOpen, Plus, Trash2, Edit2, Calendar, LogOut, X, Upload,
   DollarSign, ShoppingCart, Users, Package, Truck, Clock, CheckCircle2,
-  UserPlus, UserMinus, CalendarClock, MessageCircle, Tag, ArrowRight, FileText,
+  UserPlus, UserMinus, CalendarClock, MessageCircle, Tag, ArrowRight, FileText, Quote,
 } from "lucide-react";
 import { PDFDocument } from "pdf-lib";
 
@@ -80,7 +81,7 @@ const PRIMARY_ADMIN_EMAIL = "harrixonautomations@gmail.com";
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
   const { toast } = useToast();
-  const [tab, setTab] = useState<"overview" | "books" | "orders" | "consultations" | "availability" | "plans" | "discounts" | "samples" | "video" | "admins">("overview");
+  const [tab, setTab] = useState<"overview" | "books" | "orders" | "consultations" | "availability" | "plans" | "discounts" | "samples" | "video" | "testimonials" | "admins">("overview");
   const [books, setBooks] = useState<BookRow[]>([]);
   const [consultations, setConsultations] = useState<ConsultationRow[]>([]);
   const [orders, setOrders] = useState<OrderRow[]>([]);
@@ -296,6 +297,7 @@ const Admin = () => {
     { key: "discounts" as const, label: "Discounts", icon: Tag },
     { key: "samples" as const, label: "Samples", icon: FileText },
     { key: "video" as const, label: "Video", icon: Upload },
+    { key: "testimonials" as const, label: "Testimonials", icon: Quote },
     { key: "admins" as const, label: "Admins", icon: Users },
   ];
 
@@ -569,6 +571,9 @@ const Admin = () => {
 
           {/* Video Tab */}
           {tab === "video" && <AdminVideo />}
+
+          {/* Testimonials Tab */}
+          {tab === "testimonials" && <AdminTestimonials />}
 
           {/* Admins Tab */}
           {tab === "admins" && (
