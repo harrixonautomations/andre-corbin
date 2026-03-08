@@ -52,6 +52,9 @@ interface ConsultationRow {
   postponed_time: string | null;
   client_response: string | null;
   user_id: string | null;
+  reschedule_requested_by: string | null;
+  reschedule_proposed_date: string | null;
+  reschedule_proposed_time: string | null;
 }
 
 interface OrderRow {
