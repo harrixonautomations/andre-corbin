@@ -143,6 +143,41 @@ export type Database = {
           },
         ]
       }
+      consultation_logs: {
+        Row: {
+          action: string
+          consultation_id: string
+          created_at: string
+          details: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          consultation_id: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          consultation_id?: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consultation_logs_consultation_id_fkey"
+            columns: ["consultation_id"]
+            isOneToOne: false
+            referencedRelation: "consultations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       consultation_plans: {
         Row: {
           created_at: string
@@ -198,6 +233,9 @@ export type Database = {
           postponed_date: string | null
           postponed_time: string | null
           preferred_date: string | null
+          reschedule_proposed_date: string | null
+          reschedule_proposed_time: string | null
+          reschedule_requested_by: string | null
           slot_date: string | null
           slot_time: string | null
           status: string
@@ -215,6 +253,9 @@ export type Database = {
           postponed_date?: string | null
           postponed_time?: string | null
           preferred_date?: string | null
+          reschedule_proposed_date?: string | null
+          reschedule_proposed_time?: string | null
+          reschedule_requested_by?: string | null
           slot_date?: string | null
           slot_time?: string | null
           status?: string
@@ -232,6 +273,9 @@ export type Database = {
           postponed_date?: string | null
           postponed_time?: string | null
           preferred_date?: string | null
+          reschedule_proposed_date?: string | null
+          reschedule_proposed_time?: string | null
+          reschedule_requested_by?: string | null
           slot_date?: string | null
           slot_time?: string | null
           status?: string
