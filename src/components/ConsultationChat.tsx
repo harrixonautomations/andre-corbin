@@ -4,9 +4,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Reply, X } from "lucide-react";
+import { Send, Reply, X, Video } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { format, formatDistanceToNow, differenceInMinutes, differenceInHours } from "date-fns";
 
 interface ChatMessage {
   id: string;
@@ -22,9 +22,11 @@ interface ChatMessage {
 interface ConsultationChatProps {
   consultationId: string;
   clientName?: string;
+  slotDate?: string | null;
+  slotTime?: string | null;
 }
 
-const ConsultationChat = ({ consultationId, clientName }: ConsultationChatProps) => {
+const ConsultationChat = ({ consultationId, clientName, slotDate, slotTime }: ConsultationChatProps) => {
   const { user, isAdmin } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -77,16 +79,17 @@ const ConsultationChat = ({ consultationId, clientName }: ConsultationChatProps)
     return () => { supabase.removeChannel(channel); };
   }, [consultationId, fetchMessages]);
 
-  const handleSend = async () => {
-    if (!input.trim() || !user) return;
+  const handleSend = async (messageOverride?: string) => {
+    const text = messageOverride || input.trim();
+    if (!text || !user) return;
     setSending(true);
     await supabase.from("chat_messages").insert({
       consultation_id: consultationId,
       sender_id: user.id,
-      message: input.trim(),
+      message: text,
       reply_to_id: replyTo?.id || null,
     });
-    setInput("");
+    if (!messageOverride) setInput("");
     setReplyTo(null);
     setSending(false);
     inputRef.current?.focus();
@@ -99,14 +102,81 @@ const ConsultationChat = ({ consultationId, clientName }: ConsultationChatProps)
     }
   };
 
+  const handleInviteToMeeting = async () => {
+    // Fetch meeting credentials from site_settings
+    const { data } = await supabase
+      .from("site_settings")
+      .select("key, value")
+      .in("key", ["zoom_meeting_id", "zoom_password", "zoom_meeting_link"]);
+
+    if (!data || data.length === 0) {
+      return;
+    }
+
+    const settings: Record<string, string> = {};
+    data.forEach((s) => { settings[s.key] = s.value; });
+
+    const meetingId = settings["zoom_meeting_id"];
+    const password = settings["zoom_password"];
+    const meetingLink = settings["zoom_meeting_link"];
+
+    if (!meetingId) return;
+
+    const name = clientName || "there";
+
+    // Calculate time remaining
+    let timeRemainingText = "soon";
+    if (slotDate && slotTime) {
+      const sessionDate = new Date(`${slotDate}T${slotTime}`);
+      const now = new Date();
+      const minutesLeft = differenceInMinutes(sessionDate, now);
+      const hoursLeft = differenceInHours(sessionDate, now);
+
+      if (minutesLeft <= 0) {
+        timeRemainingText = "now";
+      } else if (minutesLeft < 60) {
+        timeRemainingText = `${minutesLeft} minute${minutesLeft !== 1 ? "s" : ""}`;
+      } else {
+        const remainingMins = minutesLeft % 60;
+        timeRemainingText = `${hoursLeft} hour${hoursLeft !== 1 ? "s" : ""}${remainingMins > 0 ? ` and ${remainingMins} minute${remainingMins !== 1 ? "s" : ""}` : ""}`;
+      }
+    }
+
+    let message = `Hi ${name}, I am inviting you to our consultation meeting which is due in ${timeRemainingText}.\n\nYou can join the meeting using these details:\n\n📋 Meeting ID: ${meetingId}\n🔑 Password: ${password}`;
+
+    if (meetingLink) {
+      message += `\n🔗 Join Link: ${meetingLink}`;
+    }
+
+    if (timeRemainingText !== "now") {
+      message += `\n\nThe meeting starts in ${timeRemainingText}. See you there!`;
+    } else {
+      message += `\n\nThe meeting is starting now. Join when you're ready!`;
+    }
+
+    await handleSend(message);
+  };
+
   return (
     <div className="flex flex-col h-[400px] bg-card border border-border rounded-lg overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-border bg-secondary/50">
-        <p className="text-sm font-medium text-foreground">
-          {isAdmin ? `Chat with ${clientName || "Client"}` : "Chat with Andre'"}
-        </p>
-        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Consultation Thread</p>
+      <div className="px-4 py-3 border-b border-border bg-secondary/50 flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-foreground">
+            {isAdmin ? `Chat with ${clientName || "Client"}` : "Chat with Andre'"}
+          </p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Consultation Thread</p>
+        </div>
+        {isAdmin && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleInviteToMeeting}
+            className="text-xs gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
+          >
+            <Video size={13} /> Invite to Meeting
+          </Button>
+        )}
       </div>
 
       {/* Messages */}
@@ -177,7 +247,7 @@ const ConsultationChat = ({ consultationId, clientName }: ConsultationChatProps)
           placeholder="Type a message..."
           className="bg-secondary border-border text-sm"
         />
-        <Button size="icon" onClick={handleSend} disabled={!input.trim() || sending} className="shrink-0">
+        <Button size="icon" onClick={() => handleSend()} disabled={!input.trim() || sending} className="shrink-0">
           <Send size={16} />
         </Button>
       </div>

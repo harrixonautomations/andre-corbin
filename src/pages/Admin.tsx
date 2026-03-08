@@ -17,10 +17,11 @@ import AdminPlans from "@/components/admin/AdminPlans";
 import AdminDiscounts from "@/components/admin/AdminDiscounts";
 import AdminVideo from "@/components/admin/AdminVideo";
 import AdminTestimonials from "@/components/admin/AdminTestimonials";
+import AdminMeeting from "@/components/admin/AdminMeeting";
 import {
   BookOpen, Plus, Trash2, Edit2, Calendar, LogOut, X, Upload,
   DollarSign, ShoppingCart, Users, Package, Truck, Clock, CheckCircle2,
-  UserPlus, UserMinus, CalendarClock, MessageCircle, Tag, ArrowRight, FileText, Quote,
+  UserPlus, UserMinus, CalendarClock, MessageCircle, Tag, ArrowRight, FileText, Quote, Video,
 } from "lucide-react";
 import { PDFDocument } from "pdf-lib";
 
@@ -81,7 +82,7 @@ const PRIMARY_ADMIN_EMAIL = "harrixonautomations@gmail.com";
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
   const { toast } = useToast();
-  const [tab, setTab] = useState<"overview" | "books" | "orders" | "consultations" | "availability" | "plans" | "discounts" | "samples" | "video" | "testimonials" | "admins">("overview");
+  const [tab, setTab] = useState<"overview" | "books" | "orders" | "consultations" | "availability" | "plans" | "discounts" | "samples" | "video" | "testimonials" | "meeting" | "admins">("overview");
   const [books, setBooks] = useState<BookRow[]>([]);
   const [consultations, setConsultations] = useState<ConsultationRow[]>([]);
   const [orders, setOrders] = useState<OrderRow[]>([]);
@@ -316,6 +317,7 @@ const Admin = () => {
     { key: "samples" as const, label: "Samples", icon: FileText },
     { key: "video" as const, label: "Video", icon: Upload },
     { key: "testimonials" as const, label: "Testimonials", icon: Quote },
+    { key: "meeting" as const, label: "Meeting", icon: Video },
     { key: "admins" as const, label: "Admins", icon: Users },
   ];
 
@@ -565,7 +567,7 @@ const Admin = () => {
                       {/* Chat */}
                       {openChatId === c.id && (
                         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4">
-                          <ConsultationChat consultationId={c.id} clientName={c.name} />
+                          <ConsultationChat consultationId={c.id} clientName={c.name} slotDate={c.slot_date} slotTime={c.slot_time} />
                         </motion.div>
                       )}
                     </div>
@@ -592,6 +594,9 @@ const Admin = () => {
 
           {/* Testimonials Tab */}
           {tab === "testimonials" && <AdminTestimonials />}
+
+          {/* Meeting Tab */}
+          {tab === "meeting" && <AdminMeeting />}
 
           {/* Admins Tab */}
           {tab === "admins" && (
